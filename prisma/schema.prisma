@@ -1,0 +1,234 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  name            String?
+  password        String
+  avatar          String?
+  role            UserRole        @default(USER)
+  status          UserStatus      @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  apiLogs         APILog[]
+  mockAPIs        MockAPI[]
+  notifications   Notification[]
+  projectMembers  ProjectMember[]
+  createdProjects Project[]       // 创建的项目
+
+  @@map("users")
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  shortId     String          @unique
+  name        String
+  description String?
+  proxyUrl     String?         // 代理URL
+  status      ProjectStatus   @default(ACTIVE)
+  creatorId   String          // 项目创建者
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdBy   User            @relation(fields: [creatorId], references: [id])
+  mockAPIs    MockAPI[]
+  members     ProjectMember[]
+  collections Collection[]    // 接口分组
+
+  @@index([shortId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([creatorId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  userId    String
+  projectId String
+  role      ProjectRole @default(DEVELOPER)
+  createdAt DateTime    @default(now())
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([projectId], map: "project_members_projectId_fkey")
+  @@map("project_members")
+}
+
+model Collection {
+  id          String    @id @default(cuid())
+  projectId   String
+  name        String    // 分组名称，如：用户模块、订单模块
+  parentId    String?   // 父级ID，支持文件夹嵌套
+  order       Int       @default(0)  // 排序
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mockAPIs    MockAPI[]
+
+  @@index([projectId])
+  @@index([parentId])
+  @@map("collections")
+}
+
+model MockAPI {
+  id              String      @id @default(cuid())
+  projectId       String
+  collectionId    String?     // 所属分组
+  path            String
+  method          HTTPMethod  @default(GET)
+  name            String?
+  description     String?
+  enabled         Boolean     @default(true)
+  proxyMode       ProxyMode   @default(MOCK)     // 代理模式
+  useFakerJs       Boolean     @default(false)    // 是否使用Faker.js语法
+  responseDelay   Int?        @default(0)
+  responseStatus  Int         @default(200)
+  responseHeaders Json?
+  responseBody    Json?
+  creatorId       String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  logs            APILog[]
+  createdBy       User        @relation(fields: [creatorId], references: [id])
+  project         Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  collection      Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  rules           MockRule[]
+
+  @@unique([projectId, path, method])
+  @@index([projectId])
+  @@index([collectionId])
+  @@index([path])
+  @@index([enabled])
+  @@index([creatorId], map: "mock_apis_creatorId_fkey")
+  @@index([projectId, enabled])
+  @@index([projectId, path, method])
+  @@map("mock_apis")
+}
+
+model MockRule {
+  id           String   @id @default(cuid())
+  mockApiId    String
+  priority     Int      @default(0)
+  enabled      Boolean  @default(true)
+  name         String?
+  conditions   Json?    // 规则条件
+  statusCode   Int?     // 响应状态码
+  headers      Json?    // 响应头
+  body         Json?    // 响应体
+  delay        Int?     // 响应延迟
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  mockApi      MockAPI  @relation(fields: [mockApiId], references: [id], onDelete: Cascade)
+
+  @@index([mockApiId])
+  @@index([priority])
+  @@index([enabled])
+  @@index([mockApiId, enabled, priority])
+  @@map("mock_rules")
+}
+
+model APILog {
+  id              String   @id @default(cuid())
+  mockApiId       String
+  userId          String?
+  ip              String
+  userAgent       String?
+  method          String
+  path            String
+  query           Json?
+  headers         Json?
+  body            Json?
+  statusCode      Int
+  responseHeaders Json?
+  responseBody    Json?
+  responseTime    Int
+  ruleId          String?
+  isProxied       Boolean  @default(false)
+  proxyUrl        String?
+  createdAt       DateTime @default(now())
+  mockApi         MockAPI  @relation(fields: [mockApiId], references: [id], onDelete: Cascade)
+  user            User?    @relation(fields: [userId], references: [id])
+
+  @@index([mockApiId])
+  @@index([createdAt])
+  @@index([ip])
+  @@index([userId], map: "api_logs_userId_fkey")
+  @@index([statusCode])
+  @@index([responseTime])
+  @@index([mockApiId, createdAt])
+  @@index([mockApiId, statusCode])
+  @@index([createdAt, statusCode])
+  @@map("api_logs")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  content   String   @db.Text
+  metadata  Json?    // 额外数据（如项目ID、Mock ID、待处理的成员添加等）
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isRead])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum UserRole {
+  ADMIN  // 系统管理员
+  USER   // 普通用户
+}
+
+enum UserStatus {
+  ACTIVE    // 活跃
+  INACTIVE  // 未激活
+  BANNED    // 已封禁
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DISABLED
+}
+
+enum ProjectRole {
+  MANAGER
+  DEVELOPER
+  VIEWER
+}
+
+enum HTTPMethod {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+enum NotificationType {
+   PROJECT      // 项目相关（创建/更新/成员变动/邀请）
+   MOCK         // Mock相关（创建/更新/删除）
+   API_ERROR    // 接口调用异常
+   SYSTEM       // 系统通知
+}
+
+enum ProxyMode {
+  MOCK      // 仅使用Mock数据
+  PROXY     // 始终代理到baseUrl
+  AUTO      // 自动判断：有Mock用Mock，无Mock则代理
+}
+

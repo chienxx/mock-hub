@@ -1,0 +1,541 @@
+@import "tailwindcss";
+
+/* 引入优雅的字体 */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap");
+
+@theme {
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 84% 4.9%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222.2 84% 4.9%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(222.2 84% 4.9%);
+  --color-primary: hsl(217 91% 60%);
+  --color-primary-foreground: hsl(210 40% 98%);
+  --color-secondary: hsl(210 40% 96.1%);
+  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(217 91% 60%);
+
+  --radius-sm: calc(0.5rem - 4px);
+  --radius-md: calc(0.5rem - 2px);
+  --radius-lg: 0.5rem;
+
+  /* Dark mode colors */
+  --color-dark-background: hsl(222.2 84% 4.9%);
+  --color-dark-foreground: hsl(210 40% 98%);
+  --color-dark-card: hsl(222.2 84% 4.9%);
+  --color-dark-card-foreground: hsl(210 40% 98%);
+  --color-dark-popover: hsl(222.2 84% 4.9%);
+  --color-dark-popover-foreground: hsl(210 40% 98%);
+  --color-dark-primary: hsl(217 91% 60%);
+  --color-dark-primary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-dark-secondary: hsl(217.2 32.6% 17.5%);
+  --color-dark-secondary-foreground: hsl(210 40% 98%);
+  --color-dark-muted: hsl(217.2 32.6% 17.5%);
+  --color-dark-muted-foreground: hsl(215 20.2% 65.1%);
+  --color-dark-accent: hsl(217.2 32.6% 17.5%);
+  --color-dark-accent-foreground: hsl(210 40% 98%);
+  --color-dark-destructive: hsl(0 62.8% 30.6%);
+  --color-dark-destructive-foreground: hsl(210 40% 98%);
+  --color-dark-border: hsl(217.2 32.6% 17.5%);
+  --color-dark-input: hsl(217.2 32.6% 17.5%);
+  --color-dark-ring: hsl(217 91% 60%);
+}
+
+@layer base {
+  * {
+    border-color: theme("colors.border");
+  }
+
+  body {
+    background-color: theme("colors.background");
+    color: theme("colors.foreground");
+    font-family:
+      "Inter",
+      "Noto Sans SC",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "PingFang SC",
+      "Microsoft YaHei",
+      sans-serif;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1,
+      "ss03" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-weight: 400;
+    letter-spacing: -0.011em;
+    line-height: 1.5;
+  }
+
+  /* 标题字体优化 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Inter", "Noto Sans SC", system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1,
+      "ss03" 1;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  /* 段落优化 */
+  p {
+    line-height: 1.65;
+    letter-spacing: -0.003em;
+  }
+
+  /* 小号文字 */
+  .text-xs {
+    letter-spacing: 0;
+  }
+
+  .text-sm {
+    letter-spacing: -0.006em;
+  }
+
+  /* 按钮字体 */
+  button {
+    font-family: "Inter", "Noto Sans SC", system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1,
+      "ss03" 1;
+  }
+
+  /* 输入框字体 */
+  input,
+  textarea,
+  select {
+    font-family: "Inter", "Noto Sans SC", system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.008em;
+  }
+
+  /* 代码字体 */
+  code,
+  pre,
+  .font-mono {
+    font-family:
+      "SF Mono", "Monaco", "Inconsolata", "Fira Code", "Courier New", monospace;
+    font-feature-settings:
+      "liga" 1,
+      "calt" 1;
+    font-size: 0.875em;
+  }
+
+  /* Badge 和 Label 字体优化 */
+  .badge,
+  [role="badge"] {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+  }
+
+  /* 导航菜单字体 */
+  nav {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  /* 卡片标题 */
+  .card-title {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* 表格字体 */
+  table {
+    font-feature-settings:
+      "tnum" 1,
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* 数字等宽 */
+  .tabular-nums {
+    font-feature-settings: "tnum" 1;
+  }
+
+  .dark {
+    --color-background: var(--color-dark-background);
+    --color-foreground: var(--color-dark-foreground);
+    --color-card: var(--color-dark-card);
+    --color-card-foreground: var(--color-dark-card-foreground);
+    --color-popover: var(--color-dark-popover);
+    --color-popover-foreground: var(--color-dark-popover-foreground);
+    --color-primary: var(--color-dark-primary);
+    --color-primary-foreground: var(--color-dark-primary-foreground);
+    --color-secondary: var(--color-dark-secondary);
+    --color-secondary-foreground: var(--color-dark-secondary-foreground);
+    --color-muted: var(--color-dark-muted);
+    --color-muted-foreground: var(--color-dark-muted-foreground);
+    --color-accent: var(--color-dark-accent);
+    --color-accent-foreground: var(--color-dark-accent-foreground);
+    --color-destructive: var(--color-dark-destructive);
+    --color-destructive-foreground: var(--color-dark-destructive-foreground);
+    --color-border: var(--color-dark-border);
+    --color-input: var(--color-dark-input);
+    --color-ring: var(--color-dark-ring);
+  }
+}
+
+/* ======= 自定义背景与玻璃化工具类（首页美化） ======= */
+/* 网格背景（浅） */
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse at center, black 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 60%,
+    transparent 100%
+  );
+}
+
+/* 径向光斑背景 */
+.radial-spot {
+  position: absolute;
+  filter: blur(40px);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.radial-spot.primary {
+  background: radial-gradient(
+    600px 600px at 70% 10%,
+    rgba(15, 23, 42, 0.18),
+    transparent 60%
+  );
+}
+
+.radial-spot.secondary {
+  background: radial-gradient(
+    500px 500px at 10% 60%,
+    rgba(2, 6, 23, 0.12),
+    transparent 60%
+  );
+}
+
+/* 玻璃化卡片 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+}
+
+/* 悬浮光晕（hover 时轻微发光） */
+.hover-glow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.hover-glow:hover {
+  box-shadow:
+    0 20px 40px rgba(15, 23, 42, 0.08),
+    0 8px 16px rgba(15, 23, 42, 0.04);
+  transform: translateY(-2px);
+}
+
+/* 发光按钮（轻微霓虹感） */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+.btn-glow::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(
+    200px 200px at var(--x, 50%) var(--y, 50%),
+    rgba(15, 23, 42, 0.15),
+    transparent 60%
+  );
+  transition: opacity 0.15s ease;
+  opacity: 0;
+}
+.btn-glow:hover::after {
+  opacity: 1;
+}
+
+/* 细边框（1px发丝线） */
+.hairline {
+  border: 0.5px solid rgba(100, 116, 139, 0.25);
+}
+
+/* 细分割线背景（横向渐隐） */
+.divider-fade {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(100, 116, 139, 0.35),
+    transparent
+  );
+  height: 1px;
+}
+
+/* 细腻阴影 */
+.shadow-soft {
+  box-shadow:
+    0 6px 30px rgba(2, 6, 23, 0.06),
+    0 2px 10px rgba(2, 6, 23, 0.06);
+}
+
+/* ======= 核心动画定义 ======= */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mock Hub Logo 专属浮动动画 - 平滑上下浮动 */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* ======= 特性卡片浮动动画 ======= */
+@keyframes float-gentle {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes float-gentle-delayed {
+  0%,
+  100% {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes float-gentle-offset {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+.animate-float-gentle-delayed {
+  animation: float-gentle-delayed 4.5s ease-in-out infinite;
+}
+
+.animate-float-gentle-offset {
+  animation: float-gentle-offset 5s ease-in-out infinite;
+}
+
+/* ======= 新的卡片特效 ======= */
+.card-elegant {
+  background: white;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  transition: all 0.3s ease;
+}
+
+.card-elegant:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+/* ======= 动画工具类 ======= */
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.animate-blob {
+  animation: blob 15s ease-in-out infinite;
+}
+
+/* 按钮点击效果 */
+.button-click {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.button-click:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.button-click:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* 延迟动画类 */
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
+}
+
+.delay-900 {
+  animation-delay: 0.9s;
+}
+
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 隐藏滚动条但保持滚动功能 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 登录成功过渡动画 */
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.5s ease-out forwards;
+}

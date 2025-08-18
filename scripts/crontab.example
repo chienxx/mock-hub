@@ -1,0 +1,19 @@
+# Mock Hub API日志清理定时任务
+# 
+# 使用方法:
+# 1. 编辑crontab: crontab -e
+# 2. 添加以下配置（根据实际路径调整）
+# 3. 保存并退出
+
+# 每天凌晨2点执行API日志清理（默认保留90天）
+0 2 * * * cd /path/to/mock-hub && /usr/bin/yarn cleanup:logs >> /var/log/mock-hub-cleanup.log 2>&1
+
+# 其他时间配置示例:
+# 每周一凌晨3点执行
+# 0 3 * * 1 cd /path/to/mock-hub && /usr/bin/yarn cleanup:logs >> /var/log/mock-hub-cleanup.log 2>&1
+
+# 每月1号凌晨4点执行
+# 0 4 1 * * cd /path/to/mock-hub && /usr/bin/yarn cleanup:logs >> /var/log/mock-hub-cleanup.log 2>&1
+
+# 自定义保留天数（保留30天）
+# 0 2 * * * cd /path/to/mock-hub && /usr/bin/yarn cleanup:logs:30 >> /var/log/mock-hub-cleanup.log 2>&1

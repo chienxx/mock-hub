@@ -1,0 +1,28 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#gradient)"/>
+  
+  <!-- Logo Icon -->
+  <g transform="translate(550, 180)">
+    <rect x="0" y="0" width="100" height="100" rx="20" fill="#0F172A"/>
+    <path d="M36 62L24 50L36 38" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M64 38L76 50L64 62" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M56 30L44 70" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="600" y="350" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="56" font-weight="700" text-anchor="middle" fill="#0F172A">Mock Hub</text>
+  <text x="600" y="400" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="24" font-weight="400" text-anchor="middle" fill="#64748B">企业级 Mock API 管理和测试平台</text>
+  
+  <!-- Features -->
+  <text x="600" y="460" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="18" font-weight="500" text-anchor="middle" fill="#94A3B8">动态数据生成 · 团队协作 · 实时监控</text>
+  
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="1200" y2="630">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="50%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+  </defs>
+</svg>
