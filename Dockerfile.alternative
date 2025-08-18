@@ -1,22 +1,20 @@
-# 使用 Node.js 20 Alpine 镜像
+# 备选方案：直接使用 Yarn 1（不需要 Corepack）
 FROM node:20-alpine
 
-# 安装必要的系统依赖和 Yarn
-RUN apk add --no-cache libc6-compat && \
-    corepack enable
+# 安装必要的系统依赖
+RUN apk add --no-cache libc6-compat yarn
 
 # 设置工作目录
 WORKDIR /app
 
-# 设置 Yarn 镜像源（使用淘宝镜像）
-ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+# 设置 npm 镜像源
+RUN yarn config set registry https://registry.npmmirror.com
 
 # 复制依赖文件
 COPY package.json yarn.lock ./
 
-# 设置 Yarn 版本并安装依赖
-RUN yarn set version 4.2.2 && \
-    yarn install --frozen-lockfile
+# 安装依赖
+RUN yarn install --frozen-lockfile
 
 # 复制项目文件
 COPY . .
