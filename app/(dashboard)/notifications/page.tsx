@@ -15,5 +15,5 @@ export default async function NotificationsPage() {
     redirect("/login");
   }
 
-  return <NotificationsPageClient userId={session.user.id} />;
+  return <NotificationsPageClient />;
 }

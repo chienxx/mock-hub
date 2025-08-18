@@ -119,7 +119,7 @@ function matchCondition(
       if (!Array.isArray(condition.value)) {
         return false;
       }
-      return condition.value.includes(fieldValue);
+      return condition.value.includes(String(fieldValue));
 
     default:
       return false;

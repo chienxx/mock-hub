@@ -208,7 +208,7 @@ function SortableRuleItem({
                       </pre>
                     </div>
                   )}
-                  {rule.body && (
+                  {rule.body != null && (
                     <div className="text-sm">
                       <span className="text-muted-foreground">响应体:</span>
                       <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted p-2 text-xs">
