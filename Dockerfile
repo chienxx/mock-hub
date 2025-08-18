@@ -12,11 +12,12 @@ RUN corepack enable && corepack prepare yarn@4.2.2 --activate
 
 # 复制依赖文件
 COPY package.json yarn.lock ./
-COPY .yarnrc.yml ./
-COPY .yarn ./.yarn
+
+# 如果有 .yarnrc.yml 则复制（可选）
+COPY .yarnrc.yml* ./
 
 # 安装依赖
-RUN yarn install --immutable
+RUN yarn install --frozen-lockfile
 
 # 复制项目文件
 COPY . .

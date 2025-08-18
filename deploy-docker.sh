@@ -25,6 +25,9 @@ echo "打包项目文件..."
 # 先用 git archive 打包已提交的文件
 git archive --format=zip --output="$ARCHIVE_NAME" HEAD
 
+# 添加必要的未提交文件（不包括 .yarn 目录）
+zip -u "$ARCHIVE_NAME" Dockerfile .dockerignore .env 2>/dev/null || true
+
 echo "打包完成: $ARCHIVE_NAME ($(du -h "$ARCHIVE_NAME" | cut -f1))"
 
 # 2. 上传到服务器
