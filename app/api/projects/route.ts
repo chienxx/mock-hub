@@ -160,19 +160,22 @@ export async function POST(request: NextRequest) {
     });
 
     // 异步记录操作日志
-    logOperation({
-      userId: session.user.id,
-      type: OperationType.PROJECT_CREATE,
-      module: "project",
-      action: "创建新项目",
-      targetId: project.id,
-      targetName: project.name,
-      metadata: {
-        shortId: project.shortId,
-        description: project.description,
+    logOperation(
+      {
+        userId: session.user.id,
+        type: OperationType.PROJECT_CREATE,
+        module: "project",
+        action: "创建新项目",
+        targetId: project.id,
+        targetName: project.name,
+        metadata: {
+          shortId: project.shortId,
+          description: project.description,
+        },
+        status: "SUCCESS",
       },
-      status: "SUCCESS",
-    }, request).catch(console.error);
+      request,
+    ).catch(console.error);
 
     return ApiResponse.success(project, "项目创建成功");
   } catch (error) {

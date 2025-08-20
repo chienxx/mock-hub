@@ -49,11 +49,14 @@ class OperationLogService {
   /**
    * 记录操作日志（异步，不阻塞主流程）
    */
-  async log(params: LogOperationParams, request?: NextRequest | Request): Promise<void> {
+  async log(
+    params: LogOperationParams,
+    request?: NextRequest | Request,
+  ): Promise<void> {
     try {
       // 提取请求信息
       const { ip, userAgent } = this.extractRequestInfo(request);
-      
+
       // 添加到队列
       this.queue.push({
         ...params,
@@ -75,7 +78,10 @@ class OperationLogService {
   /**
    * 从请求中提取信息
    */
-  private extractRequestInfo(request?: NextRequest | Request): { ip: string; userAgent?: string } {
+  private extractRequestInfo(request?: NextRequest | Request): {
+    ip: string;
+    userAgent?: string;
+  } {
     if (!request) {
       return { ip: "unknown" };
     }
@@ -87,12 +93,13 @@ class OperationLogService {
       headers = request.headers;
     }
 
-    const ip = headers.get("x-forwarded-for")?.split(",")[0].trim() || 
-               headers.get("x-real-ip") || 
-               headers.get("cf-connecting-ip") || // Cloudflare
-               headers.get("x-client-ip") ||
-               "unknown";
-    
+    const ip =
+      headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      headers.get("x-real-ip") ||
+      headers.get("cf-connecting-ip") || // Cloudflare
+      headers.get("x-client-ip") ||
+      "unknown";
+
     const userAgent = headers.get("user-agent") || undefined;
 
     return { ip, userAgent };
@@ -123,7 +130,7 @@ class OperationLogService {
     try {
       // 批量创建日志记录
       await prisma.operationLog.createMany({
-        data: itemsToProcess.map(item => ({
+        data: itemsToProcess.map((item) => ({
           userId: item.userId,
           type: item.type,
           module: item.module,
@@ -134,16 +141,20 @@ class OperationLogService {
           status: item.status || "SUCCESS",
           errorMessage: item.errorMessage,
           ip: item.ip,
-          userAgent: item.userAgent ? this.truncateUserAgent(item.userAgent) : null,
+          userAgent: item.userAgent
+            ? this.truncateUserAgent(item.userAgent)
+            : null,
           createdAt: item.timestamp,
         })),
         skipDuplicates: true,
       });
 
-      console.log(`[OperationLog] Successfully flushed ${itemsToProcess.length} logs`);
+      console.log(
+        `[OperationLog] Successfully flushed ${itemsToProcess.length} logs`,
+      );
     } catch (error) {
       console.error("[OperationLog] Failed to flush logs:", error);
-      
+
       // 失败重试：将项目重新加入队列前端（带延迟）
       setTimeout(() => {
         this.queue.unshift(...itemsToProcess);
@@ -156,7 +167,10 @@ class OperationLogService {
   /**
    * 截断 UserAgent 字符串
    */
-  private truncateUserAgent(userAgent: string, maxLength: number = 500): string {
+  private truncateUserAgent(
+    userAgent: string,
+    maxLength: number = 500,
+  ): string {
     if (userAgent.length <= maxLength) {
       return userAgent;
     }
@@ -192,7 +206,7 @@ export const operationLogService = OperationLogService.getInstance();
  */
 export async function logOperation(
   params: LogOperationParams,
-  request?: NextRequest | Request
+  request?: NextRequest | Request,
 ): Promise<void> {
   return operationLogService.log(params, request);
 }
@@ -203,12 +217,12 @@ export async function logOperation(
 export function LogOperation(
   type: OperationType,
   module: string,
-  actionTemplate?: string
+  actionTemplate?: string,
 ) {
   return function (
     _target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
 
@@ -227,22 +241,27 @@ export function LogOperation(
         throw error;
       } finally {
         const duration = Date.now() - startTime;
-        
+
         // 尝试从参数中提取必要信息
-        const request = args.find(arg => arg instanceof NextRequest || arg instanceof Request);
-        const session = args.find(arg => arg?.user?.id)?.user;
-        
+        const request = args.find(
+          (arg) => arg instanceof NextRequest || arg instanceof Request,
+        );
+        const session = args.find((arg) => arg?.user?.id)?.user;
+
         if (session?.id) {
-          await logOperation({
-            userId: session.id,
-            type,
-            module,
-            action: actionTemplate || `${propertyKey} operation`,
-            status,
-            errorMessage,
-            duration,
-            metadata: { method: propertyKey },
-          }, request);
+          await logOperation(
+            {
+              userId: session.id,
+              type,
+              module,
+              action: actionTemplate || `${propertyKey} operation`,
+              status,
+              errorMessage,
+              duration,
+              metadata: { method: propertyKey },
+            },
+            request,
+          );
         }
       }
     };
@@ -265,30 +284,30 @@ export function getOperationTypeLabel(type: OperationType): string {
     USER_BAN: "封禁/解封",
     USER_ROLE: "角色变更",
     USER_RESET_PWD: "重置密码",
-    
+
     // 项目相关
     PROJECT_CREATE: "创建项目",
     PROJECT_UPDATE: "更新项目",
     PROJECT_DELETE: "删除项目",
     PROJECT_ARCHIVE: "归档项目",
-    
+
     // 项目成员相关
     MEMBER_ADD: "添加成员",
     MEMBER_REMOVE: "移除成员",
     MEMBER_UPDATE: "更新成员角色",
-    
+
     // Mock API相关
     MOCK_CREATE: "创建Mock",
     MOCK_UPDATE: "更新Mock",
     MOCK_DELETE: "删除Mock",
     MOCK_TOGGLE: "切换Mock状态",
-    
+
     // 其他
     EXPORT: "导出数据",
     IMPORT: "导入数据",
     OTHER: "其他操作",
   };
-  
+
   return labels[type] || type;
 }
 
@@ -304,7 +323,7 @@ export function getModuleLabel(module: string): string {
     mock: "Mock管理",
     system: "系统管理",
   };
-  
+
   return labels[module] || module;
 }
 
@@ -314,7 +333,7 @@ if (typeof process !== "undefined") {
     console.log("[OperationLog] Shutting down...");
     await operationLogService.shutdown();
   });
-  
+
   process.on("SIGINT", async () => {
     console.log("[OperationLog] Shutting down...");
     await operationLogService.shutdown();

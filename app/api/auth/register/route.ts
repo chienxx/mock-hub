@@ -45,19 +45,22 @@ export async function POST(req: NextRequest) {
     });
 
     // 异步记录注册操作日志
-    logOperation({
-      userId: user.id,
-      type: OperationType.USER_REGISTER,
-      module: "auth",
-      action: "用户注册",
-      targetId: user.id,
-      targetName: user.email,
-      metadata: {
-        email: user.email,
-        name: user.name,
+    logOperation(
+      {
+        userId: user.id,
+        type: OperationType.USER_REGISTER,
+        module: "auth",
+        action: "用户注册",
+        targetId: user.id,
+        targetName: user.email,
+        metadata: {
+          email: user.email,
+          name: user.name,
+        },
+        status: "SUCCESS",
       },
-      status: "SUCCESS",
-    }, req).catch(console.error);
+      req,
+    ).catch(console.error);
 
     return NextResponse.json({
       message: "注册成功",

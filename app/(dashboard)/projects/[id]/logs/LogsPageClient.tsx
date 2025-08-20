@@ -40,9 +40,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import type { ApiResponse } from "@/types/project";
 
@@ -110,6 +117,10 @@ export function LogsPageClient({
     pageSize: 10,
   });
 
+  // 时间范围筛选
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
   const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
@@ -128,6 +139,8 @@ export function LogsPageClient({
           filters.isProxied !== "all" && { isProxied: filters.isProxied }),
         ...(filters.method &&
           filters.method !== "all" && { method: filters.method }),
+        ...(startDate && { startDate: format(startDate, "yyyy-MM-dd") }),
+        ...(endDate && { endDate: format(endDate, "yyyy-MM-dd") }),
       });
 
       const response = await fetch(`/api/projects/${projectId}/logs?${params}`);
@@ -149,7 +162,7 @@ export function LogsPageClient({
     } finally {
       setLoading(false);
     }
-  }, [projectId, filters]);
+  }, [projectId, filters, startDate, endDate]);
 
   useEffect(() => {
     fetchLogs();
@@ -473,11 +486,72 @@ export function LogsPageClient({
                   <SelectValue placeholder="代理" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="all">代理情况</SelectItem>
                   <SelectItem value="true">已代理</SelectItem>
                   <SelectItem value="false">未代理</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* 时间范围筛选 */}
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[140px] justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700",
+                        !startDate && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          !startDate && "text-muted-foreground",
+                        )}
+                      />
+                      {startDate ? format(startDate, "yyyy-MM-dd") : "开始日期"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      locale={zhCN}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <span className="text-slate-400 text-sm">至</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[140px] justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700",
+                        !endDate && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          !endDate && "text-muted-foreground",
+                        )}
+                      />
+                      {endDate ? format(endDate, "yyyy-MM-dd") : "结束日期"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      locale={zhCN}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </>
           )}
         </div>

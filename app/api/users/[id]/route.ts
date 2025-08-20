@@ -66,30 +66,42 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     });
 
     // 异步记录操作日志（不阻塞响应）
-    const determineOperationType = (): { type: OperationType; action: string } => {
+    const determineOperationType = (): {
+      type: OperationType;
+      action: string;
+    } => {
       if (validatedData.status === "BANNED") {
         return { type: OperationType.USER_BAN, action: "封禁用户账号" };
-      } else if (validatedData.status === "ACTIVE" && user.status === "BANNED") {
+      } else if (
+        validatedData.status === "ACTIVE" &&
+        user.status === "BANNED"
+      ) {
         return { type: OperationType.USER_BAN, action: "解封用户账号" };
       } else if (validatedData.role) {
-        return { type: OperationType.USER_ROLE, action: `修改用户角色为 ${validatedData.role}` };
+        return {
+          type: OperationType.USER_ROLE,
+          action: `修改用户角色为 ${validatedData.role}`,
+        };
       }
       return { type: OperationType.OTHER, action: "更新用户信息" };
     };
-    
+
     const { type, action } = determineOperationType();
-    
+
     // 异步记录，不等待完成
-    logOperation({
-      userId: session.user.id,
-      type,
-      module: "user",
-      action,
-      targetId: userId,
-      targetName: user.email,
-      metadata: validatedData,
-      status: "SUCCESS",
-    }, request).catch(console.error);
+    logOperation(
+      {
+        userId: session.user.id,
+        type,
+        module: "user",
+        action,
+        targetId: userId,
+        targetName: user.email,
+        metadata: validatedData,
+        status: "SUCCESS",
+      },
+      request,
+    ).catch(console.error);
 
     return ApiResponse.success(updatedUser, "用户信息已更新");
   } catch (error) {
@@ -185,19 +197,22 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     });
 
     // 异步记录操作日志
-    logOperation({
-      userId: session.user.id,
-      type: OperationType.USER_DELETE,
-      module: "user",
-      action: `删除用户账号及相关数据`,
-      targetId: userId,
-      targetName: user.email,
-      metadata: {
-        deletedProjects: user.createdProjects.length,
-        removedFromProjects: user.projectMembers.length,
+    logOperation(
+      {
+        userId: session.user.id,
+        type: OperationType.USER_DELETE,
+        module: "user",
+        action: `删除用户账号及相关数据`,
+        targetId: userId,
+        targetName: user.email,
+        metadata: {
+          deletedProjects: user.createdProjects.length,
+          removedFromProjects: user.projectMembers.length,
+        },
+        status: "SUCCESS",
       },
-      status: "SUCCESS",
-    }, request).catch(console.error);
+      request,
+    ).catch(console.error);
 
     return ApiResponse.success(
       {

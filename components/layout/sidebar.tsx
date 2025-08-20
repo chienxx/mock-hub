@@ -92,12 +92,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         ],
       });
     }
-    
+
     // 支持菜单（所有用户可见）
     items.push({
       title: "支持",
       items: [
-        { label: "操作日志", href: "/operation-logs", icon: Shield, badge: null },
+        { label: "操作日志", href: "/operations", icon: Shield, badge: null },
         { label: "帮助中心", href: "/help", icon: HelpCircle, badge: "New" },
       ],
     });

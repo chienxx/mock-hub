@@ -91,11 +91,11 @@ export function CollapsibleSidebar({
         icon: Shield,
         items: [
           { label: "用户管理", href: "/users", icon: Users, badge: null },
-          { 
-            label: "操作日志", 
-            href: "/operation-logs", 
-            icon: FileText, 
-            badge: null 
+          {
+            label: "操作历史",
+            href: "/operations",
+            icon: History,
+            badge: null,
           },
           {
             label: "通知中心",
@@ -118,11 +118,11 @@ export function CollapsibleSidebar({
             icon: Bell,
             badge: null,
           },
-          { 
-            label: "操作日志", 
-            href: "/operation-logs", 
-            icon: History, 
-            badge: null 
+          {
+            label: "操作历史",
+            href: "/operations",
+            icon: History,
+            badge: null,
           },
           { label: "帮助中心", href: "/help", icon: HelpCircle, badge: "New" },
         ],
