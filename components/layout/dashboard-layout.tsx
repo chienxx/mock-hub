@@ -36,21 +36,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="absolute inset-0 pointer-events-none">
         {/* 微妙的渐变背景 */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 via-white to-slate-100/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800/50"></div>
-        
+
         {/* 柔和的光晕效果 */}
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
-        
+
         {/* 噪点纹理覆盖 */}
-        <div 
+        <div
           className="absolute inset-0 opacity-50"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E")`,
-            backgroundRepeat: 'repeat',
+            backgroundRepeat: "repeat",
           }}
         ></div>
       </div>
-      
+
       {/* Sidebar */}
       <CollapsibleSidebar
         collapsed={sidebarCollapsed}

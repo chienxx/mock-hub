@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProjectRole } from "@prisma/client";
+import { config } from "@/lib/config";
 import Link from "next/link";
 import {
   FileCode,
@@ -184,8 +185,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           <div>
             <p className="text-sm font-medium mb-1">Mock 服务地址</p>
             <code className="text-sm bg-muted px-2 py-1 rounded">
-              {process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}
-              /api/mock/{project.shortId}/[path]
+              {config.getAppUrl()}/api/mock/{project.shortId}/[path]
             </code>
           </div>
         </CardContent>

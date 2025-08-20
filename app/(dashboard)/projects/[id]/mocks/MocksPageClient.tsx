@@ -12,6 +12,7 @@ import {
   Layers,
   Terminal,
 } from "lucide-react";
+import { config } from "@/lib/config";
 import { ProjectHeader } from "@/components/projects/project-header";
 import { Button } from "@/components/ui/button";
 import { CreateMockDialog } from "@/components/mocks/create-mock-dialog";
@@ -45,11 +46,32 @@ export function MocksPageClient({
   >(null);
   const [copied, setCopied] = useState(false);
 
-  const mockUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/mock/${projectShortId}`;
+  const mockUrl = `${config.getAppUrl()}/api/mock/${projectShortId}`;
 
   const handleCopyUrl = async () => {
     try {
-      await navigator.clipboard.writeText(mockUrl);
+      // 使用改进的复制逻辑，兼容 HTTP 环境
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(mockUrl);
+      } else {
+        // 降级方案：使用 execCommand
+        const textArea = document.createElement("textarea");
+        textArea.value = mockUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        if (!successful) {
+          throw new Error("复制失败");
+        }
+      }
+
       setCopied(true);
       toast.success("Mock 服务地址已复制到剪贴板");
       setTimeout(() => setCopied(false), 2000);

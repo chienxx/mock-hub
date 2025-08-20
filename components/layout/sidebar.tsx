@@ -43,18 +43,23 @@ const getProjectMenuLabel = (userRole?: string) => {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  
+
   // 根据用户角色动态生成菜单
   const menuItems = useMemo(() => {
     const userRole = session?.user?.role;
     const projectLabel = getProjectMenuLabel(userRole);
-    
+
     const items = [
       {
         title: "工作台",
         items: [
           { label: "仪表盘", href: "/dashboard", icon: Home, badge: null },
-          { label: projectLabel, href: "/projects", icon: FolderOpen, badge: null },
+          {
+            label: projectLabel,
+            href: "/projects",
+            icon: FolderOpen,
+            badge: null,
+          },
         ],
       },
       {
@@ -62,12 +67,22 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         items: [
           { label: "API 接口", href: "/mocks", icon: FileCode, badge: "Hot" },
           { label: "接口日志", href: "/logs", icon: AlertCircle, badge: null },
-          { label: "数据分析", href: "/analytics", icon: BarChart3, badge: null },
-          { label: "通知中心", href: "/notifications", icon: Bell, badge: null },
+          {
+            label: "数据分析",
+            href: "/analytics",
+            icon: BarChart3,
+            badge: null,
+          },
+          {
+            label: "通知中心",
+            href: "/notifications",
+            icon: Bell,
+            badge: null,
+          },
         ],
       },
     ];
-    
+
     // 只有管理员能看到系统管理菜单
     if (userRole === "ADMIN") {
       items.push({
@@ -86,7 +101,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         ],
       });
     }
-    
+
     return items;
   }, [session?.user?.role]);
 

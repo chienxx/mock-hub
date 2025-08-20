@@ -3,11 +3,11 @@
 /**
  * API日志清理脚本
  * 通过Linux crontab定时执行
- * 
+ *
  * 使用方法:
  * yarn cleanup:logs              # 清理90天前的日志（默认）
  * yarn cleanup:logs --days 30    # 清理30天前的日志
- * 
+ *
  * Crontab配置示例:
  * 0 2 * * * cd /path/to/mock-hub && yarn cleanup:logs >> /var/log/mock-hub-cleanup.log 2>&1
  */
@@ -99,8 +99,8 @@ async function main() {
 
   // 解析命令行参数或使用环境变量
   const args = process.argv.slice(2);
-  let retentionDays = process.env.LOG_RETENTION_DAYS 
-    ? parseInt(process.env.LOG_RETENTION_DAYS) 
+  let retentionDays = process.env.LOG_RETENTION_DAYS
+    ? parseInt(process.env.LOG_RETENTION_DAYS)
     : 90;
 
   // 命令行参数优先级更高
@@ -111,7 +111,7 @@ async function main() {
       retentionDays = days;
     }
   }
-  
+
   // 确保retentionDays有效
   if (isNaN(retentionDays) || retentionDays < 1 || retentionDays > 365) {
     retentionDays = 90;

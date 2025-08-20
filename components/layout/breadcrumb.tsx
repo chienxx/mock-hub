@@ -34,7 +34,7 @@ export function Breadcrumb() {
 
       // 格式化路径名称 - 改进中文显示
       let label = path;
-      
+
       // 根据用户角色动态设置项目菜单名称
       const getProjectLabel = () => {
         const userRole = session?.user?.role;
@@ -50,9 +50,9 @@ export function Breadcrumb() {
         }
         return null;
       };
-      
+
       const projectLabel = getProjectLabel();
-      
+
       const pathMap: Record<string, string> = {
         projects: projectLabel || "项目管理",
         mocks: "API 接口",

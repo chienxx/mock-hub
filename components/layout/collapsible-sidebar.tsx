@@ -46,15 +46,25 @@ export function CollapsibleSidebar({
   const getMenuItems = () => {
     const userRole = session?.user?.role;
     // 根据用户角色获取项目管理的显示名称
-    const projectLabel = userRole === "ADMIN" ? "所有项目" : userRole === "USER" ? "我的项目" : "项目管理";
-    
+    const projectLabel =
+      userRole === "ADMIN"
+        ? "所有项目"
+        : userRole === "USER"
+          ? "我的项目"
+          : "项目管理";
+
     const baseMenuItems = [
       {
         title: "工作台",
         icon: Home,
         items: [
           { label: "仪表盘", href: "/dashboard", icon: BarChart3, badge: null },
-          { label: projectLabel, href: "/projects", icon: Folders, badge: null },
+          {
+            label: projectLabel,
+            href: "/projects",
+            icon: Folders,
+            badge: null,
+          },
         ],
       },
       {

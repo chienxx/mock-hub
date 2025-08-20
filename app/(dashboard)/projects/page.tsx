@@ -36,25 +36,28 @@ export default function ModernProjectsPage() {
 
   const userRole = session?.user?.role;
   const canCreateProject = userRole === "ADMIN";
-  
+
   // 根据用户角色和项目角色获取页面标题和描述
   const pageInfo = useMemo(() => {
     // 系统管理员可以看到和管理所有项目
     if (userRole === "ADMIN") {
       return {
         title: "所有项目",
-        description: "查看并管理平台上的所有 Mock API 项目"
+        description: "查看并管理平台上的所有 Mock API 项目",
       };
     }
-    
+
     // 普通用户：根据在项目中的角色确定描述
     // 分析用户在所有项目中的最高角色
     let hasManagerRole = false;
     let hasDeveloperRole = false;
     let hasViewerRole = false;
-    
-    projects.forEach(project => {
-      if (project.userRole === "MANAGER" || project.creatorId === session?.user?.id) {
+
+    projects.forEach((project) => {
+      if (
+        project.userRole === "MANAGER" ||
+        project.creatorId === session?.user?.id
+      ) {
         hasManagerRole = true;
       } else if (project.userRole === "DEVELOPER") {
         hasDeveloperRole = true;
@@ -62,7 +65,7 @@ export default function ModernProjectsPage() {
         hasViewerRole = true;
       }
     });
-    
+
     // 根据最高角色显示对应描述
     let description = "查看您参与的 Mock API 项目";
     if (hasManagerRole) {
@@ -72,17 +75,17 @@ export default function ModernProjectsPage() {
     } else if (hasViewerRole) {
       description = "查看您参与的 Mock API 项目";
     }
-    
+
     // 如果还没有加载项目，显示通用描述
     if (projects.length === 0 && !loading) {
       description = "暂无参与的项目";
     } else if (loading) {
       description = "正在加载项目...";
     }
-    
+
     return {
       title: "我的项目",
-      description
+      description,
     };
   }, [userRole, projects, loading, session?.user?.id]);
 

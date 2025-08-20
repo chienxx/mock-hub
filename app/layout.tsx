@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Mock Hub - API Mock 测试平台",
-  description: "企业级 Mock API 管理和测试平台，支持动态数据生成、团队协作、实时监控",
+  description:
+    "企业级 Mock API 管理和测试平台，支持动态数据生成、团队协作、实时监控",
   keywords: ["Mock API", "API测试", "Mock服务", "API管理", "团队协作"],
   authors: [{ name: "Mock Hub Team" }],
   creator: "Mock Hub",

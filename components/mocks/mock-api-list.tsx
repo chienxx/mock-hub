@@ -41,6 +41,7 @@ import type { MockAPI, ApiResponse, PaginatedResponse } from "@/types/mock";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import { config } from "@/lib/config";
 
 interface Props {
   projectId: string;
@@ -175,10 +176,30 @@ export function MockAPIList({
 
   const copyMockUrl = async (mockAPI: MockAPI) => {
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const mockUrl = `${baseUrl}/api/mock/${projectShortId}${mockAPI.path}`;
-      await navigator.clipboard.writeText(mockUrl);
+      const mockUrl = config.getMockApiUrl(projectShortId, mockAPI.path);
+
+      // 使用改进的复制逻辑，兼容 HTTP 环境
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(mockUrl);
+      } else {
+        // 降级方案：使用 execCommand
+        const textArea = document.createElement("textarea");
+        textArea.value = mockUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        if (!successful) {
+          throw new Error("复制失败");
+        }
+      }
+
       setCopiedId(mockAPI.id);
       toast.success("Mock URL 已复制到剪贴板");
       setTimeout(() => setCopiedId(null), 2000);

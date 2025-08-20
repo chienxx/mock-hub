@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { config } from "@/lib/config";
 import {
   ArrowLeft,
   Save,
@@ -212,13 +213,36 @@ export default function MockAPIEditPage({ params }: PageProps) {
 
   const copyMockUrl = async () => {
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       const project = await fetch(`/api/projects/${projectId}`).then((r) =>
         r.json(),
       );
-      const mockUrl = `${baseUrl}/api/mock/${project.data?.shortId}${mockAPI?.path}`;
-      await navigator.clipboard.writeText(mockUrl);
+      const mockUrl = config.getMockApiUrl(
+        project.data?.shortId || "",
+        mockAPI?.path || "",
+      );
+
+      // 使用改进的复制逻辑，兼容 HTTP 环境
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(mockUrl);
+      } else {
+        // 降级方案：使用 execCommand
+        const textArea = document.createElement("textarea");
+        textArea.value = mockUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        if (!successful) {
+          throw new Error("复制失败");
+        }
+      }
+
       setCopied(true);
       toast.success("Mock URL 已复制到剪贴板");
       setTimeout(() => setCopied(false), 2000);
