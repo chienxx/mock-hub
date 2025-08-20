@@ -141,9 +141,6 @@ export function UserManagementClient({
         );
       case "BANNED":
         return <Badge variant="destructive">已封禁</Badge>;
-      case "INACTIVE":
-        // 保留向后兼容，但不应该出现
-        return <Badge variant="secondary">未激活</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

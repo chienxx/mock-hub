@@ -83,24 +83,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       },
     ];
 
-    // 只有管理员能看到系统管理菜单
+    // 系统管理菜单（管理员特有）
     if (userRole === "ADMIN") {
       items.push({
         title: "系统管理",
         items: [
           { label: "用户管理", href: "/users", icon: Users, badge: null },
-          { label: "帮助中心", href: "/help", icon: HelpCircle, badge: "New" },
-        ],
-      });
-    } else {
-      // 普通用户只能看到帮助中心
-      items.push({
-        title: "支持",
-        items: [
-          { label: "帮助中心", href: "/help", icon: HelpCircle, badge: "New" },
         ],
       });
     }
+    
+    // 支持菜单（所有用户可见）
+    items.push({
+      title: "支持",
+      items: [
+        { label: "操作日志", href: "/operation-logs", icon: Shield, badge: null },
+        { label: "帮助中心", href: "/help", icon: HelpCircle, badge: "New" },
+      ],
+    });
 
     return items;
   }, [session?.user?.role]);

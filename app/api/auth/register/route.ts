@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { OperationType } from "@prisma/client";
+import { logOperation } from "@/lib/services/operation-log-service";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -9,7 +11,7 @@ const registerSchema = z.object({
   name: z.string().min(1),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
@@ -41,6 +43,21 @@ export async function POST(req: Request) {
         name: true,
       },
     });
+
+    // 异步记录注册操作日志
+    logOperation({
+      userId: user.id,
+      type: OperationType.USER_REGISTER,
+      module: "auth",
+      action: "用户注册",
+      targetId: user.id,
+      targetName: user.email,
+      metadata: {
+        email: user.email,
+        name: user.name,
+      },
+      status: "SUCCESS",
+    }, req).catch(console.error);
 
     return NextResponse.json({
       message: "注册成功",

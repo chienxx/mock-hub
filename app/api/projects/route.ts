@@ -5,10 +5,11 @@ import { generateShortId } from "@/lib/utils/shortid";
 import { createProjectSchema } from "@/lib/validations/project";
 import { ApiResponse } from "@/lib/api/response";
 import { handleApiError } from "@/lib/api/error-handler";
-import { ProjectRole, ProjectStatus } from "@prisma/client";
+import { ProjectRole, ProjectStatus, OperationType } from "@prisma/client";
 import { CacheManager } from "@/lib/cache";
 import { projectInclude } from "@/lib/api/project-helpers";
 import { notifyProjectMembers } from "@/lib/api/notification-helper";
+import { logOperation } from "@/lib/services/operation-log-service";
 
 // 获取用户的项目列表
 export async function GET(request: NextRequest) {
@@ -157,6 +158,21 @@ export async function POST(request: NextRequest) {
         action: "PROJECT_CREATED",
       },
     });
+
+    // 异步记录操作日志
+    logOperation({
+      userId: session.user.id,
+      type: OperationType.PROJECT_CREATE,
+      module: "project",
+      action: "创建新项目",
+      targetId: project.id,
+      targetName: project.name,
+      metadata: {
+        shortId: project.shortId,
+        description: project.description,
+      },
+      status: "SUCCESS",
+    }, request).catch(console.error);
 
     return ApiResponse.success(project, "项目创建成功");
   } catch (error) {

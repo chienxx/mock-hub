@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/lib/api/response";
 import { handleApiError } from "@/lib/api/error-handler";
 import { z } from "zod";
-import { UserRole } from "@prisma/client";
+import { UserRole, OperationType } from "@prisma/client";
+import { logOperation } from "@/lib/services/operation-log-service";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -64,6 +65,32 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    // 异步记录操作日志（不阻塞响应）
+    const determineOperationType = (): { type: OperationType; action: string } => {
+      if (validatedData.status === "BANNED") {
+        return { type: OperationType.USER_BAN, action: "封禁用户账号" };
+      } else if (validatedData.status === "ACTIVE" && user.status === "BANNED") {
+        return { type: OperationType.USER_BAN, action: "解封用户账号" };
+      } else if (validatedData.role) {
+        return { type: OperationType.USER_ROLE, action: `修改用户角色为 ${validatedData.role}` };
+      }
+      return { type: OperationType.OTHER, action: "更新用户信息" };
+    };
+    
+    const { type, action } = determineOperationType();
+    
+    // 异步记录，不等待完成
+    logOperation({
+      userId: session.user.id,
+      type,
+      module: "user",
+      action,
+      targetId: userId,
+      targetName: user.email,
+      metadata: validatedData,
+      status: "SUCCESS",
+    }, request).catch(console.error);
+
     return ApiResponse.success(updatedUser, "用户信息已更新");
   } catch (error) {
     return handleApiError(error);
@@ -73,7 +100,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 /**
  * 删除用户（仅管理员）
  */
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -157,10 +184,20 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       });
     });
 
-    // 记录删除操作日志
-    console.log(
-      `管理员 ${session.user.email} 删除了用户 ${user.email} (ID: ${userId})`,
-    );
+    // 异步记录操作日志
+    logOperation({
+      userId: session.user.id,
+      type: OperationType.USER_DELETE,
+      module: "user",
+      action: `删除用户账号及相关数据`,
+      targetId: userId,
+      targetName: user.email,
+      metadata: {
+        deletedProjects: user.createdProjects.length,
+        removedFromProjects: user.projectMembers.length,
+      },
+      status: "SUCCESS",
+    }, request).catch(console.error);
 
     return ApiResponse.success(
       {

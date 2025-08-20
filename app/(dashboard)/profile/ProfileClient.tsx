@@ -103,8 +103,6 @@ export function ProfileClient({
             活跃
           </Badge>
         );
-      case "INACTIVE":
-        return <Badge variant="secondary">未激活</Badge>;
       case "BANNED":
         return <Badge variant="destructive">已封禁</Badge>;
       default:

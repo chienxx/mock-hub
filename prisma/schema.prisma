@@ -22,6 +22,7 @@ model User {
   notifications   Notification[]
   projectMembers  ProjectMember[]
   createdProjects Project[]       // 创建的项目
+  operationLogs   OperationLog[]  // 操作日志
 
   @@map("users")
 }
@@ -189,6 +190,34 @@ model Notification {
   @@map("notifications")
 }
 
+// 操作日志表
+model OperationLog {
+  id           String         @id @default(cuid())
+  userId       String         // 操作用户
+  type         OperationType  // 操作类型
+  module       String         // 操作模块（如：用户管理、项目管理等）
+  action       String         // 操作描述
+  targetId     String?        // 操作目标ID（如用户ID、项目ID等）
+  targetName   String?        // 操作目标名称（便于显示）
+  metadata     Json?          // 额外的元数据（如修改前后的值）
+  ip           String?        // 操作IP地址
+  userAgent    String?        @db.Text // 用户代理
+  status       String         @default("SUCCESS") // 操作状态：SUCCESS/FAILED
+  errorMessage String?        @db.Text // 错误信息（如果失败）
+  createdAt    DateTime       @default(now())
+  
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([type])
+  @@index([module])
+  @@index([targetId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("operation_logs")
+}
+
 enum UserRole {
   ADMIN  // 系统管理员
   USER   // 普通用户
@@ -229,5 +258,40 @@ enum ProxyMode {
   MOCK      // 仅使用Mock数据
   PROXY     // 始终代理到baseUrl
   AUTO      // 自动判断：有Mock用Mock，无Mock则代理
+}
+
+// 操作类型枚举
+enum OperationType {
+  // 用户相关
+  USER_LOGIN        // 用户登录
+  USER_LOGOUT       // 用户登出
+  USER_REGISTER     // 用户注册
+  USER_CREATE       // 创建用户（管理员创建）
+  USER_DELETE       // 删除用户
+  USER_BAN          // 封禁用户
+  USER_ROLE         // 用户角色变更
+  USER_RESET_PWD    // 重置密码
+  
+  // 项目相关
+  PROJECT_CREATE    // 创建项目
+  PROJECT_UPDATE    // 更新项目
+  PROJECT_DELETE    // 删除项目
+  PROJECT_ARCHIVE   // 归档项目
+  
+  // 项目成员相关
+  MEMBER_ADD        // 添加成员
+  MEMBER_REMOVE     // 移除成员
+  MEMBER_UPDATE     // 更新成员角色
+  
+  // Mock API相关
+  MOCK_CREATE       // 创建Mock
+  MOCK_UPDATE       // 更新Mock
+  MOCK_DELETE       // 删除Mock
+  MOCK_TOGGLE       // 启用/禁用Mock
+  
+  // 其他
+  EXPORT            // 导出数据
+  IMPORT            // 导入数据
+  OTHER             // 其他操作
 }
 

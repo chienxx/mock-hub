@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@prisma/client";
+import { UserRole, OperationType } from "@prisma/client";
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
@@ -39,6 +39,20 @@ export const authConfig: NextAuthConfig = {
           if (user.status === "BANNED") {
             // 用户已被封禁
             console.log(`封禁用户尝试登录: ${user.email}`);
+            // 记录失败的登录尝试
+            await prisma.operationLog.create({
+              data: {
+                userId: user.id,
+                type: OperationType.USER_LOGIN,
+                module: "auth",
+                action: "登录失败: 账户已被封禁",
+                targetId: user.id,
+                targetName: user.email,
+                status: "FAILED",
+                errorMessage: "账户已被封禁",
+                createdAt: new Date(),
+              },
+            });
             return null;
           }
 
@@ -48,8 +62,36 @@ export const authConfig: NextAuthConfig = {
           );
 
           if (!isPasswordValid) {
+            // 记录密码错误的登录尝试
+            await prisma.operationLog.create({
+              data: {
+                userId: user.id,
+                type: OperationType.USER_LOGIN,
+                module: "auth",
+                action: "登录失败: 密码错误",
+                targetId: user.id,
+                targetName: user.email,
+                status: "FAILED",
+                errorMessage: "密码错误",
+                createdAt: new Date(),
+              },
+            });
             return null;
           }
+
+          // 记录成功登录
+          await prisma.operationLog.create({
+            data: {
+              userId: user.id,
+              type: OperationType.USER_LOGIN,
+              module: "auth",
+              action: "用户登录成功",
+              targetId: user.id,
+              targetName: user.email,
+              status: "SUCCESS",
+              createdAt: new Date(),
+            },
+          });
 
           // 认证成功
           return {

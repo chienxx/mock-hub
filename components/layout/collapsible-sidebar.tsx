@@ -19,6 +19,7 @@ import {
   BarChart3,
   Layers,
   HelpCircle,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +91,12 @@ export function CollapsibleSidebar({
         icon: Shield,
         items: [
           { label: "用户管理", href: "/users", icon: Users, badge: null },
+          { 
+            label: "操作日志", 
+            href: "/operation-logs", 
+            icon: FileText, 
+            badge: null 
+          },
           {
             label: "通知中心",
             href: "/notifications",
@@ -110,6 +117,12 @@ export function CollapsibleSidebar({
             href: "/notifications",
             icon: Bell,
             badge: null,
+          },
+          { 
+            label: "操作日志", 
+            href: "/operation-logs", 
+            icon: History, 
+            badge: null 
           },
           { label: "帮助中心", href: "/help", icon: HelpCircle, badge: "New" },
         ],
