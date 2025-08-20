@@ -586,7 +586,6 @@ export default function MockAPIEditPage({ params }: PageProps) {
                     <Button
                       type="submit"
                       disabled={saving}
-                      className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {saving ? "保存中..." : "保存更改"}
@@ -695,7 +694,6 @@ export default function MockAPIEditPage({ params }: PageProps) {
                     <Button
                       type="submit"
                       disabled={saving}
-                      className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {saving ? "保存中..." : "保存更改"}

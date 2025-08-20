@@ -422,7 +422,7 @@ export function RuleList({ mockApiId, projectId, canManage }: Props) {
               <p className="text-muted-foreground">暂无规则</p>
               {canManage && (
                 <Button
-                  className="mt-4 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
+                  className="mt-4"
                   onClick={() => {
                     if (rules.length >= 5) {
                       toast.error("规则数量已达上限（最多5条）");

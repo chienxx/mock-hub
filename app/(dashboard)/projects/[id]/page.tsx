@@ -145,7 +145,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </>
         )}
         <Link href={`/projects/${project.id}/mocks`}>
-          <Button className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900">
+          <Button>
             <FileCode className="mr-2 h-4 w-4" />
             Mock API
           </Button>

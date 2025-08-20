@@ -264,7 +264,6 @@ export default function SettingsClient({
             {canManageProject && (
               <div className="flex justify-end">
                 <Button
-                  className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
                   type="submit"
                   disabled={saving || !isDirty}
                 >

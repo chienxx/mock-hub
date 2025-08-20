@@ -263,7 +263,6 @@ export function CreateMockDialog({
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
               >
                 {loading ? (
                   <>

@@ -371,7 +371,6 @@ export function LogsPageClient({
         ) : (
           <Button
             onClick={connectRealTime}
-            className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
           >
             <Wifi className="mr-2 h-4 w-4" />
             实时监控

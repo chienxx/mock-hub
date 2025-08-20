@@ -336,7 +336,6 @@ export function MockAPIList({
               </div>
               <Button
                 onClick={handleSearch}
-                className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
               >
                 查询
               </Button>
@@ -557,12 +556,7 @@ export function MockAPIList({
                   variant={pageNum === page ? "default" : "outline"}
                   size="sm"
                   onClick={() => setPage(pageNum)}
-                  className={cn(
-                    "w-8 h-8 p-0",
-                    pageNum === page
-                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                      : "bg-white/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-700",
-                  )}
+                  className="w-8 h-8 p-0"
                 >
                   {pageNum}
                 </Button>

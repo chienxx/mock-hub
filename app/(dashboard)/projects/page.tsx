@@ -140,7 +140,7 @@ export default function ModernProjectsPage() {
 
         {canCreateProject && (
           <CreateProjectDialog onSuccess={fetchProjects}>
-            <Button className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900">
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               创建项目
             </Button>
@@ -275,12 +275,7 @@ export default function ModernProjectsPage() {
                       variant={pageNum === page ? "default" : "outline"}
                       size="sm"
                       onClick={() => setPage(pageNum)}
-                      className={cn(
-                        "w-8 h-8 p-0",
-                        pageNum === page
-                          ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                          : "bg-white/80 dark:bg-slate-900/80",
-                      )}
+                      className="w-8 h-8 p-0"
                     >
                       {pageNum}
                     </Button>

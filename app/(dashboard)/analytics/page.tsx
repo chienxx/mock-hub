@@ -99,7 +99,7 @@ export default async function AnalyticsRedirectPage() {
 
         {canCreateProject && (
           <Link href="/projects">
-            <Button className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900">
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               创建新项目
             </Button>
