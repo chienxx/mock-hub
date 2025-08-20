@@ -196,7 +196,6 @@ enum UserRole {
 
 enum UserStatus {
   ACTIVE    // 活跃
-  INACTIVE  // 未激活
   BANNED    // 已封禁
 }
 

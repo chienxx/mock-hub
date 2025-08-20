@@ -36,7 +36,7 @@ export function CopyMockUrlButton({ url, className }: Props) {
           throw new Error("复制失败");
         }
       }
-    } catch (error) {
+    } catch {
       // 最后的降级方案：显示可复制的文本
       toast.error(
         <div className="flex flex-col gap-2">

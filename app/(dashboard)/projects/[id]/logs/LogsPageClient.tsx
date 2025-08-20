@@ -369,9 +369,7 @@ export function LogsPageClient({
             断开实时
           </Button>
         ) : (
-          <Button
-            onClick={connectRealTime}
-          >
+          <Button onClick={connectRealTime}>
             <Wifi className="mr-2 h-4 w-4" />
             实时监控
           </Button>

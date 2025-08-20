@@ -35,6 +35,13 @@ export const authConfig: NextAuthConfig = {
             return null;
           }
 
+          // 检查用户状态
+          if (user.status === "BANNED") {
+            // 用户已被封禁
+            console.log(`封禁用户尝试登录: ${user.email}`);
+            return null;
+          }
+
           const isPasswordValid = await bcrypt.compare(
             credentials.password as string,
             user.password,

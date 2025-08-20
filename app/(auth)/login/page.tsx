@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,13 +17,23 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState("");
+
+  // 检查 URL 参数中的错误类型
+  useEffect(() => {
+    const errorType = searchParams.get("error");
+    if (errorType === "banned") {
+      setError("您的账户已被封禁，请联系管理员");
+      toast.error("账户已被封禁");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +48,14 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("邮箱或密码不正确");
-        toast.error("登录失败，请检查邮箱和密码");
+        // 根据不同的错误类型显示不同的提示
+        if (result.error === "CredentialsSignin") {
+          setError("邮箱或密码不正确");
+          toast.error("登录失败，请检查邮箱和密码");
+        } else {
+          setError("登录失败，请稍后重试");
+          toast.error("登录失败");
+        }
       } else if (result?.ok) {
         setIsRedirecting(true);
         toast.success("登录成功");
@@ -261,7 +277,13 @@ export default function LoginPage() {
                   </div>
 
                   {error && (
-                    <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    <div
+                      className={`p-3 text-sm rounded-md border ${
+                        error.includes("封禁")
+                          ? "text-orange-600 bg-orange-50 border-orange-200"
+                          : "text-red-600 bg-red-50 border-red-200"
+                      }`}
+                    >
                       {error}
                     </div>
                   )}
@@ -300,5 +322,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

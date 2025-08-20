@@ -299,10 +299,7 @@ export function RuleEditDialog({
             >
               取消
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-            >
+            <Button type="submit" disabled={loading}>
               {loading ? "保存中..." : "保存"}
             </Button>
           </DialogFooter>

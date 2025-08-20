@@ -583,10 +583,7 @@ export default function MockAPIEditPage({ params }: PageProps) {
 
                 {canManage && (
                   <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
-                    <Button
-                      type="submit"
-                      disabled={saving}
-                    >
+                    <Button type="submit" disabled={saving}>
                       <Save className="mr-2 h-4 w-4" />
                       {saving ? "保存中..." : "保存更改"}
                     </Button>
@@ -691,10 +688,7 @@ export default function MockAPIEditPage({ params }: PageProps) {
 
                 {canManage && (
                   <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
-                    <Button
-                      type="submit"
-                      disabled={saving}
-                    >
+                    <Button type="submit" disabled={saving}>
                       <Save className="mr-2 h-4 w-4" />
                       {saving ? "保存中..." : "保存更改"}
                     </Button>

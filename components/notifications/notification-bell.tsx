@@ -95,51 +95,48 @@ export function NotificationBell() {
   useEffect(() => {
     fetchNotifications();
 
-    // 暂时禁用SSE连接，等后端实现
-    // TODO: 实现 /api/notifications/stream 端点后启用
-    /*
-    const source = new EventSource('/api/notifications/stream')
-    
+    // SSE连接 - 实时接收通知
+    const source = new EventSource("/api/notifications/stream");
+
     source.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data)
-        if (data.type === 'notification') {
+        const data = JSON.parse(event.data);
+        if (data.type === "notification") {
           // 收到新通知
-          setNotifications(prev => [data.data as Notification, ...prev].slice(0, 10))
-          setUnreadCount(prev => prev + 1)
-          
+          setNotifications((prev) =>
+            [data.data as Notification, ...prev].slice(0, 10),
+          );
+          setUnreadCount((prev) => prev + 1);
+
           // 显示桌面通知（如果用户允许）
-          if ('Notification' in window && Notification.permission === 'granted') {
+          if (
+            "Notification" in window &&
+            Notification.permission === "granted"
+          ) {
             new Notification(data.data.title, {
               body: data.data.content,
-              icon: '/favicon.ico'
-            })
+              icon: "/favicon.ico",
+            });
           }
         }
       } catch {
         // 忽略解析错误
       }
-    }
+    };
 
     source.onerror = () => {
       // SSE连接错误，关闭连接
-      source.close()
-    }
-
-    // Store eventSource reference if needed
-    // source reference is kept within this function scope
+      source.close();
+    };
 
     // 请求通知权限
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
     }
 
     return () => {
-      if (source) {
-        source.close()
-      }
-    }
-    */
+      source.close();
+    };
   }, []);
 
   const getNotificationIcon = (type: NotificationType) => {
@@ -160,11 +157,15 @@ export function NotificationBell() {
   const getNotificationColor = (type: NotificationType) => {
     switch (type) {
       case "API_ERROR":
-        return "text-destructive";
+        return "text-red-600 dark:text-red-400";
       case "SYSTEM":
-        return "text-primary";
+        return "text-slate-700 dark:text-slate-300";
+      case "PROJECT":
+        return "text-slate-600 dark:text-slate-400";
+      case "MOCK":
+        return "text-slate-700 dark:text-slate-300";
       default:
-        return "";
+        return "text-slate-600 dark:text-slate-400";
     }
   };
 

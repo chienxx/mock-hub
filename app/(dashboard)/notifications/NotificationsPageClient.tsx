@@ -208,19 +208,19 @@ export function NotificationsPageClient() {
     }
   };
 
-  // 获取通知类型样式
+  // 获取通知类型样式 - 使用符合整体设计的配色
   const getNotificationStyle = (type: NotificationType) => {
     switch (type) {
       case "PROJECT":
-        return "bg-blue-500";
+        return "bg-slate-600 dark:bg-slate-500";
       case "MOCK":
-        return "bg-green-500";
+        return "bg-slate-700 dark:bg-slate-400";
       case "API_ERROR":
-        return "bg-red-500";
+        return "bg-red-600 dark:bg-red-500";
       case "SYSTEM":
-        return "bg-purple-500";
+        return "bg-slate-800 dark:bg-slate-300";
       default:
-        return "bg-gray-500";
+        return "bg-slate-500 dark:bg-slate-600";
     }
   };
 
@@ -376,8 +376,9 @@ export function NotificationsPageClient() {
               className={cn(
                 "border-slate-200/60 dark:border-slate-800/60 transition-all cursor-pointer",
                 "hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700",
+                "hover:translate-y-[-1px]",
                 !notification.isRead &&
-                  "bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900",
+                  "bg-slate-50/80 dark:bg-slate-800/30 border-slate-300/80 dark:border-slate-700/80 shadow-sm",
               )}
               onClick={() => {
                 setSelectedNotification(notification);
@@ -386,37 +387,61 @@ export function NotificationsPageClient() {
                 }
               }}
             >
-              <div className="p-4">
-                <div className="flex items-start gap-3">
-                  <div
-                    className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center text-white",
-                      getNotificationStyle(notification.type),
+              <div className="p-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="relative flex-shrink-0">
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center text-white",
+                        getNotificationStyle(notification.type),
+                      )}
+                    >
+                      {getNotificationIcon(notification.type)}
+                    </div>
+                    {!notification.isRead && (
+                      <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
                     )}
-                  >
-                    {getNotificationIcon(notification.type)}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-slate-900 dark:text-white">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3
+                            className={cn(
+                              "text-sm font-medium",
+                              notification.isRead
+                                ? "text-slate-600 dark:text-slate-400"
+                                : "text-slate-800 dark:text-slate-200",
+                            )}
+                          >
                             {notification.title}
                           </h3>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] px-1.5 py-0 h-4",
+                              notification.isRead
+                                ? "text-slate-400 border-slate-200 dark:text-slate-500 dark:border-slate-700"
+                                : "text-slate-500 border-slate-300 dark:text-slate-400 dark:border-slate-600",
+                            )}
+                          >
                             {getNotificationLabel(notification.type)}
                           </Badge>
-                          {!notification.isRead && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                          )}
                         </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                        <p
+                          className={cn(
+                            "text-xs leading-relaxed line-clamp-2",
+                            notification.isRead
+                              ? "text-slate-500 dark:text-slate-500"
+                              : "text-slate-600 dark:text-slate-400",
+                          )}
+                        >
                           {notification.content}
                         </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Clock className="h-3 w-3 text-slate-400" />
-                          <span className="text-xs text-slate-500">
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <Clock className="h-3 w-3 text-slate-400 dark:text-slate-600" />
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500">
                             {formatDistanceToNow(
                               new Date(notification.createdAt),
                               {

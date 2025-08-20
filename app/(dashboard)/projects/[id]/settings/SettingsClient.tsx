@@ -263,10 +263,7 @@ export default function SettingsClient({
 
             {canManageProject && (
               <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={saving || !isDirty}
-                >
+                <Button type="submit" disabled={saving || !isDirty}>
                   {saving ? (
                     <>保存中...</>
                   ) : (

@@ -234,10 +234,7 @@ export function AddMemberDialog({
               >
                 取消
               </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-              >
+              <Button type="submit" disabled={loading}>
                 {loading ? "添加中..." : "添加成员"}
               </Button>
             </DialogFooter>
