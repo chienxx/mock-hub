@@ -206,7 +206,7 @@ export function HelpCenterClient() {
         },
         {
           q: "支持哪些 HTTP 方法？",
-          a: "支持所有标准 HTTP 方法：GET、POST、PUT、DELETE、PATCH、HEAD、OPTIONS 等。",
+          a: "支持常见Restful HTTP 方法：GET、POST、PUT、DELETE。",
         },
         {
           q: "什么是响应规则？",
@@ -227,10 +227,6 @@ export function HelpCenterClient() {
           a: "Collection 用于组织和管理相关的 API 接口，支持多层级嵌套，方便项目结构化管理。",
         },
         {
-          q: "支持批量导入吗？",
-          a: "支持导入 Swagger/OpenAPI 格式的接口文档，快速生成 Mock API。",
-        },
-        {
           q: "如何设置延迟响应？",
           a: "在 Mock API 配置中可以设置响应延迟时间，模拟真实网络环境。",
         },
@@ -249,8 +245,8 @@ export function HelpCenterClient() {
           a: "在项目设置的成员管理页面，输入成员邮箱并选择相应角色即可邀请。",
         },
         {
-          q: "能否导出项目配置？",
-          a: "支持导出为 JSON 格式，包含所有 Mock 配置、规则等，方便备份和迁移。",
+          q: "如何加入项目？",
+          a: "目前仅支持系统管理员创建项目，普通用户注册后需等待系统管理员/项目管理者邀请加入。",
         },
       ],
     },
