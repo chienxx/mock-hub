@@ -4,10 +4,13 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log("开始执行数据库种子...");
+  
   // 创建默认管理员账户
-  const hashedPassword = await bcrypt.hash("admin123456", 12);
+  const hashedPassword = await bcrypt.hash("Zyuc@2025", 12);
+  console.log("密码已加密");
 
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: "admin@mockhub.com" },
     update: {},
     create: {
@@ -17,15 +20,17 @@ async function main() {
       role: "ADMIN",
     },
   });
-
-  // Seeded admin user
+  
+  console.log("管理员账户创建成功:", admin.email);
 }
 
 main()
   .then(async () => {
+    console.log("种子数据执行完成");
     await prisma.$disconnect();
   })
-  .catch(async () => {
+  .catch(async (e) => {
+    console.error("种子数据执行失败:", e);
     await prisma.$disconnect();
     process.exit(1);
   });

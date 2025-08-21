@@ -17,6 +17,10 @@ pnpm-lock.yaml
 # testing
 /coverage
 
+# prisma
+/prisma/seed.ts
+/prisma/migrations
+
 # next.js
 /.next/
 /out/
