@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --experimental-https",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --experimental-https",
     "lint": "next lint",
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
@@ -43,6 +43,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-query": "^5.84.2",
+    "@tanstack/react-virtual": "^3.13.12",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -62,7 +63,8 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "undici": "^7.13.0",
-    "zod": "^4.0.17"
+    "zod": "^4.0.17",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

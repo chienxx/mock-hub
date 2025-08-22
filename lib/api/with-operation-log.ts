@@ -6,10 +6,12 @@ import { logOperation } from "@/lib/services/operation-log-service";
 export interface OperationConfig {
   type: OperationType;
   module: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: string | ((req: NextRequest, res: any) => string);
   skipOnError?: boolean; // 是否在错误时跳过日志记录
   extractTarget?: (
     req: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     res: any,
   ) => { id?: string; name?: string };
 }
@@ -17,6 +19,7 @@ export interface OperationConfig {
 /**
  * API 路由包装器，自动记录操作日志
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withOperationLog<T extends any[]>(
   config: OperationConfig,
   handler: (...args: T) => Promise<NextResponse | Response>,
@@ -136,7 +139,9 @@ export function withOperationLog<T extends any[]>(
  * 条件记录操作日志
  * 只有当条件满足时才记录日志
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withConditionalLog<T extends any[]>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   condition: (req: NextRequest, res: any) => OperationConfig | null,
   handler: (...args: T) => Promise<NextResponse | Response>,
 ) {

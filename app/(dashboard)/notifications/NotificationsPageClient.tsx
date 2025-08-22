@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useNotificationStore } from "@/lib/stores/notification-store";
 import {
   Check,
   Trash2,
@@ -16,6 +18,7 @@ import {
   Server,
   Shield,
   Settings,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,12 +68,15 @@ interface NotificationsResponse {
 export function NotificationsPageClient() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [readFilter, setReadFilter] = useState<string>("all");
   const [selectedNotification, setSelectedNotification] =
     useState<Notification | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const { triggerRefresh } = useNotificationStore();
 
   // 通知设置
   const [notificationSettings, setNotificationSettings] = useState({
@@ -89,58 +95,153 @@ export function NotificationsPageClient() {
     unreadCount: 0,
   });
 
+  // 虚拟滚动容器引用
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
   // 获取通知列表
-  const fetchNotifications = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        pageSize: pagination.pageSize.toString(),
-        ...(selectedType !== "all" && { type: selectedType }),
-        ...(readFilter !== "all" && {
-          isRead: readFilter === "read" ? "true" : "false",
-        }),
-        ...(searchQuery && { search: searchQuery }),
-      });
-
-      const response = await fetch(`/api/notifications?${params}`);
-      const result: ApiResponse<NotificationsResponse> = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "获取通知失败");
+  const fetchNotifications = useCallback(
+    async (isLoadMore = false) => {
+      if (!isLoadMore) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
       }
 
-      if (result.data) {
-        setNotifications(result.data.notifications);
-        setPagination((prev) => ({
-          ...prev,
-          total: result.data?.total || 0,
-          totalPages: result.data?.totalPages || 1,
-          unreadCount: result.data?.unreadCount || 0,
-        }));
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "获取通知失败");
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    pagination.page,
-    pagination.pageSize,
-    selectedType,
-    readFilter,
-    searchQuery,
-  ]);
+      try {
+        const params = new URLSearchParams({
+          page: isLoadMore ? (pagination.page + 1).toString() : "1",
+          pageSize: pagination.pageSize.toString(),
+          ...(selectedType !== "all" && { type: selectedType }),
+          ...(readFilter !== "all" && {
+            isRead: readFilter === "read" ? "true" : "false",
+          }),
+          ...(searchQuery && { search: searchQuery }),
+        });
 
+        const response = await fetch(`/api/notifications?${params}`);
+        const result: ApiResponse<NotificationsResponse> =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "获取通知失败");
+        }
+
+        if (result.data) {
+          if (isLoadMore) {
+            setNotifications((prev) => [
+              ...prev,
+              ...result.data!.notifications,
+            ]);
+            setPagination((prev) => ({
+              ...prev,
+              page: prev.page + 1,
+              total: result.data?.total || 0,
+              totalPages: result.data?.totalPages || 1,
+              unreadCount: result.data?.unreadCount || 0,
+            }));
+          } else {
+            setNotifications(result.data.notifications);
+            setPagination({
+              page: 1,
+              pageSize: 20,
+              total: result.data.total || 0,
+              totalPages: result.data.totalPages || 1,
+              unreadCount: result.data.unreadCount || 0,
+            });
+          }
+
+          // 判断是否还有更多数据
+          setHasMore(
+            (isLoadMore ? pagination.page + 1 : 1) <
+              (result.data?.totalPages || 1)
+          );
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "获取通知失败");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [
+      pagination.page,
+      pagination.pageSize,
+      selectedType,
+      readFilter,
+      searchQuery,
+    ]
+  );
+
+  // 初始加载
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    fetchNotifications(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedType, readFilter, searchQuery]);
+
+  // SSE监听新通知
+  useEffect(() => {
+    const source = new EventSource("/api/notifications/stream");
+
+    source.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "notification") {
+          // 收到新通知，刷新列表
+          fetchNotifications(false);
+        }
+      } catch {
+        // 忽略解析错误
+      }
+    };
+
+    source.onerror = () => {
+      source.close();
+    };
+
+    return () => {
+      source.close();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 设置无限滚动观察器
+  useEffect(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !loading &&
+          !loadingMore
+        ) {
+          fetchNotifications(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loading, loadingMore, fetchNotifications]);
 
   // 标记为已读
   const markAsRead = async (notificationIds: string[]) => {
     try {
-      const response = await fetch("/api/notifications/read", {
-        method: "POST",
+      const response = await fetch("/api/notifications", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: notificationIds }),
       });
@@ -149,8 +250,8 @@ export function NotificationsPageClient() {
 
       setNotifications((prev) =>
         prev.map((n) =>
-          notificationIds.includes(n.id) ? { ...n, isRead: true } : n,
-        ),
+          notificationIds.includes(n.id) ? { ...n, isRead: true } : n
+        )
       );
 
       setPagination((prev) => ({
@@ -159,6 +260,7 @@ export function NotificationsPageClient() {
       }));
 
       toast.success("已标记为已读");
+      triggerRefresh(); // 触发右上角通知刷新
     } catch {
       toast.error("操作失败，请重试");
     }
@@ -176,9 +278,22 @@ export function NotificationsPageClient() {
       if (!response.ok) throw new Error("删除失败");
 
       setNotifications((prev) =>
-        prev.filter((n) => !notificationIds.includes(n.id)),
+        prev.filter((n) => !notificationIds.includes(n.id))
       );
+
+      // 更新未读数量
+      const deletedUnreadCount = notificationIds.filter(
+        (id) => notifications.find((n) => n.id === id && !n.isRead)
+      ).length;
+
+      setPagination((prev) => ({
+        ...prev,
+        total: Math.max(0, prev.total - notificationIds.length),
+        unreadCount: Math.max(0, prev.unreadCount - deletedUnreadCount),
+      }));
+
       toast.success("已删除通知");
+      triggerRefresh(); // 触发右上角通知刷新
     } catch {
       toast.error("删除失败，请重试");
     }
@@ -186,7 +301,9 @@ export function NotificationsPageClient() {
 
   // 标记全部已读
   const markAllAsRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n.id);
+    const unreadIds = notifications
+      .filter((n) => !n.isRead)
+      .map((n) => n.id);
     if (unreadIds.length > 0) {
       await markAsRead(unreadIds);
     }
@@ -208,7 +325,7 @@ export function NotificationsPageClient() {
     }
   };
 
-  // 获取通知类型样式 - 使用符合整体设计的配色
+  // 获取通知类型样式
   const getNotificationStyle = (type: NotificationType) => {
     switch (type) {
       case "PROJECT":
@@ -244,12 +361,136 @@ export function NotificationsPageClient() {
     (n) =>
       !searchQuery ||
       n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.content.toLowerCase().includes(searchQuery.toLowerCase()),
+      n.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // 虚拟滚动配置
+  const virtualizer = useVirtualizer({
+    count: filteredNotifications.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => 120,
+    overscan: 5,
+  });
+
+  // 渲染通知卡片
+  const renderNotificationCard = (notification: Notification) => (
+    <Card
+      key={notification.id}
+      className={cn(
+        "border-slate-200/60 dark:border-slate-800/60 transition-all cursor-pointer",
+        "hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700",
+        "hover:translate-y-[-1px]",
+        !notification.isRead &&
+          "bg-slate-50/80 dark:bg-slate-800/30 border-slate-300/80 dark:border-slate-700/80 shadow-sm"
+      )}
+      onClick={() => {
+        setSelectedNotification(notification);
+        if (!notification.isRead) {
+          markAsRead([notification.id]);
+        }
+      }}
+    >
+      <div className="p-3">
+        <div className="flex items-start gap-2.5">
+          <div className="relative flex-shrink-0">
+            <div
+              className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center text-white",
+                getNotificationStyle(notification.type)
+              )}
+            >
+              {getNotificationIcon(notification.type)}
+            </div>
+            {!notification.isRead && (
+              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3
+                    className={cn(
+                      "text-sm font-medium",
+                      notification.isRead
+                        ? "text-slate-600 dark:text-slate-400"
+                        : "text-slate-800 dark:text-slate-200"
+                    )}
+                  >
+                    {notification.title}
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] px-1.5 py-0 h-4",
+                      notification.isRead
+                        ? "text-slate-400 border-slate-200 dark:text-slate-500 dark:border-slate-700"
+                        : "text-slate-500 border-slate-300 dark:text-slate-400 dark:border-slate-600"
+                    )}
+                  >
+                    {getNotificationLabel(notification.type)}
+                  </Badge>
+                </div>
+                <p
+                  className={cn(
+                    "text-xs leading-relaxed line-clamp-2",
+                    notification.isRead
+                      ? "text-slate-500 dark:text-slate-500"
+                      : "text-slate-600 dark:text-slate-400"
+                  )}
+                >
+                  {notification.content}
+                </p>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <Clock className="h-3 w-3 text-slate-400 dark:text-slate-600" />
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                    {formatDistanceToNow(new Date(notification.createdAt), {
+                      addSuffix: true,
+                      locale: zhCN,
+                    })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1">
+                {!notification.isRead && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markAsRead([notification.id]);
+                    }}
+                    className="h-8 px-2"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm("确定要删除这条通知吗？")) {
+                      deleteNotifications([notification.id]);
+                    }
+                  }}
+                  className="h-8 px-2 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 
   return (
     <div className="space-y-6">
-      {/* 页面标题 - 统一风格 */}
+      {/* 页面标题 */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-gradient-to-br from-slate-900 to-slate-700 rounded-xl flex items-center justify-center">
@@ -288,11 +529,13 @@ export function NotificationsPageClient() {
           </Button>
           <Button
             variant="outline"
-            onClick={fetchNotifications}
+            onClick={() => fetchNotifications(false)}
             disabled={loading}
             className="border-slate-200 dark:border-slate-700"
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw
+              className={cn("mr-2 h-4 w-4", loading && "animate-spin")}
+            />
             刷新
           </Button>
         </div>
@@ -304,7 +547,7 @@ export function NotificationsPageClient() {
           "bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm",
           "border border-slate-200/60 dark:border-slate-800/60",
           "rounded-xl p-4",
-          "shadow-sm",
+          "shadow-sm"
         )}
       >
         <div className="flex flex-col lg:flex-row gap-4">
@@ -344,10 +587,28 @@ export function NotificationsPageClient() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* 通知统计信息 */}
+        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <span className="text-xs text-slate-600 dark:text-slate-400">
+            共 {pagination.total} 条通知
+          </span>
+          {filteredNotifications.length !== pagination.total && (
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              当前显示 {filteredNotifications.length} 条
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* 通知列表 */}
-      <div className="space-y-3">
+      {/* 通知列表 - 虚拟滚动 */}
+      <div
+        ref={scrollContainerRef}
+        className="h-[calc(100vh-300px)] overflow-auto space-y-3"
+        style={{
+          contain: "strict",
+        }}
+      >
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center space-y-3">
@@ -370,165 +631,61 @@ export function NotificationsPageClient() {
             </div>
           </Card>
         ) : (
-          filteredNotifications.map((notification) => (
-            <Card
-              key={notification.id}
-              className={cn(
-                "border-slate-200/60 dark:border-slate-800/60 transition-all cursor-pointer",
-                "hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700",
-                "hover:translate-y-[-1px]",
-                !notification.isRead &&
-                  "bg-slate-50/80 dark:bg-slate-800/30 border-slate-300/80 dark:border-slate-700/80 shadow-sm",
-              )}
-              onClick={() => {
-                setSelectedNotification(notification);
-                if (!notification.isRead) {
-                  markAsRead([notification.id]);
-                }
+          <>
+            <div
+              style={{
+                height: `${virtualizer.getTotalSize()}px`,
+                width: "100%",
+                position: "relative",
               }}
             >
-              <div className="p-3">
-                <div className="flex items-start gap-2.5">
-                  <div className="relative flex-shrink-0">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center text-white",
-                        getNotificationStyle(notification.type),
-                      )}
-                    >
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    {!notification.isRead && (
-                      <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              {virtualizer.getVirtualItems().map((virtualItem) => (
+                <div
+                  key={virtualItem.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                >
+                  <div className="pb-3">
+                    {renderNotificationCard(
+                      filteredNotifications[virtualItem.index]
                     )}
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3
-                            className={cn(
-                              "text-sm font-medium",
-                              notification.isRead
-                                ? "text-slate-600 dark:text-slate-400"
-                                : "text-slate-800 dark:text-slate-200",
-                            )}
-                          >
-                            {notification.title}
-                          </h3>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[10px] px-1.5 py-0 h-4",
-                              notification.isRead
-                                ? "text-slate-400 border-slate-200 dark:text-slate-500 dark:border-slate-700"
-                                : "text-slate-500 border-slate-300 dark:text-slate-400 dark:border-slate-600",
-                            )}
-                          >
-                            {getNotificationLabel(notification.type)}
-                          </Badge>
-                        </div>
-                        <p
-                          className={cn(
-                            "text-xs leading-relaxed line-clamp-2",
-                            notification.isRead
-                              ? "text-slate-500 dark:text-slate-500"
-                              : "text-slate-600 dark:text-slate-400",
-                          )}
-                        >
-                          {notification.content}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <Clock className="h-3 w-3 text-slate-400 dark:text-slate-600" />
-                          <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                            {formatDistanceToNow(
-                              new Date(notification.createdAt),
-                              {
-                                addSuffix: true,
-                                locale: zhCN,
-                              },
-                            )}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        {!notification.isRead && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAsRead([notification.id]);
-                            }}
-                            className="h-8 px-2"
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (confirm("确定要删除这条通知吗？")) {
-                              deleteNotifications([notification.id]);
-                            }
-                          }}
-                          className="h-8 px-2 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
-            </Card>
-          ))
-        )}
+              ))}
+            </div>
 
-        {/* 分页 */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4">
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              共 {pagination.total} 条通知
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setPagination((prev) => ({
-                    ...prev,
-                    page: Math.max(1, prev.page - 1),
-                  }))
-                }
-                disabled={pagination.page === 1}
-                className="border-slate-200 dark:border-slate-700"
+            {/* 加载更多触发器 */}
+            {hasMore && (
+              <div
+                ref={loadMoreRef}
+                className="flex items-center justify-center py-4"
               >
-                上一页
-              </Button>
-              <span className="px-3 text-sm text-slate-600 dark:text-slate-400">
-                {pagination.page} / {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setPagination((prev) => ({
-                    ...prev,
-                    page: Math.min(pagination.totalPages, prev.page + 1),
-                  }))
-                }
-                disabled={pagination.page === pagination.totalPages}
-                className="border-slate-200 dark:border-slate-700"
-              >
-                下一页
-              </Button>
-            </div>
-          </div>
+                {loadingMore ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-600 dark:border-slate-400" />
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      加载更多...
+                    </span>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    onClick={() => fetchNotifications(true)}
+                    className="text-slate-600 dark:text-slate-400"
+                  >
+                    <ChevronDown className="mr-2 h-4 w-4" />
+                    加载更多
+                  </Button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -700,7 +857,6 @@ export function NotificationsPageClient() {
             </Button>
             <Button
               onClick={() => {
-                // 保存设置逻辑
                 toast.success("通知设置已保存");
                 setShowSettings(false);
               }}
@@ -741,7 +897,7 @@ export function NotificationsPageClient() {
                   {JSON.stringify(
                     selectedNotification.metadata as Record<string, unknown>,
                     null,
-                    2,
+                    2
                   )}
                 </pre>
               </div>

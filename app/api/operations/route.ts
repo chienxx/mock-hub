@@ -23,13 +23,14 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
     const userId = searchParams.get("userId");
     const type = searchParams.get("type") as OperationType | null;
-    const module = searchParams.get("module");
+    const operationModule = searchParams.get("module");
     const status = searchParams.get("status");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const search = searchParams.get("search");
 
     // 构建查询条件
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
 
     // 普通用户只能看自己的日志
@@ -43,8 +44,8 @@ export async function GET(request: NextRequest) {
       where.type = type;
     }
 
-    if (module) {
-      where.module = module;
+    if (operationModule) {
+      where.module = operationModule;
     }
 
     if (status) {
@@ -117,8 +118,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { startDate, endDate, type, module, userId } = body;
+    const { startDate, endDate, type, module: operationModule, userId } = body;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
 
     // 普通用户只能导出自己的日志
@@ -130,7 +132,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (type) where.type = type;
-    if (module) where.module = module;
+    if (operationModule) where.module = operationModule;
 
     if (startDate || endDate) {
       where.createdAt = {};

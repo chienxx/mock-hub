@@ -10,6 +10,7 @@ export interface LogOperationParams {
   action: string;
   targetId?: string;
   targetName?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   status?: "SUCCESS" | "FAILED";
   errorMessage?: string;
@@ -220,16 +221,19 @@ export function LogOperation(
   actionTemplate?: string,
 ) {
   return function (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     descriptor.value = async function (...args: any[]) {
       const startTime = Date.now();
       let status: "SUCCESS" | "FAILED" = "SUCCESS";
       let errorMessage: string | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let result: any;
 
       try {

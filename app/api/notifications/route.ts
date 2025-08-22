@@ -106,9 +106,8 @@ export async function DELETE(request: NextRequest) {
       return ApiResponse.unauthorized("请先登录");
     }
 
-    const searchParams = request.nextUrl.searchParams;
-    const notificationId = searchParams.get("id");
-    const deleteAll = searchParams.get("all") === "true";
+    const body = await request.json();
+    const { ids, deleteAll } = body;
 
     if (deleteAll) {
       // 删除所有已读通知
@@ -118,11 +117,11 @@ export async function DELETE(request: NextRequest) {
           isRead: true,
         },
       });
-    } else if (notificationId) {
+    } else if (ids && Array.isArray(ids)) {
       // 删除指定通知
       await prisma.notification.deleteMany({
         where: {
-          id: notificationId,
+          id: { in: ids },
           userId: session.user.id,
         },
       });

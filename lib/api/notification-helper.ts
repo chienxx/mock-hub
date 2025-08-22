@@ -28,17 +28,11 @@ export async function createNotification(data: CreateNotificationData) {
       },
     });
 
-    // 通过SSE推送通知
+    // 通过SSE推送通知（推送完整的通知对象）
     sseManager.broadcast(
       {
         type: "notification",
-        data: {
-          userId: data.userId,
-          type: data.type,
-          title: data.title,
-          content: data.content,
-          metadata: data.metadata,
-        },
+        data: notification,
       },
       { userId: data.userId },
     );

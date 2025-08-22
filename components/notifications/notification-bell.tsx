@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useNotificationStore } from "@/lib/stores/notification-store";
 import type { ApiResponse } from "@/types/project";
 import type { NotificationType } from "@prisma/client";
 
@@ -36,6 +37,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { refreshKey } = useNotificationStore();
 
   // 获取通知列表
   const fetchNotifications = async () => {
@@ -78,8 +80,10 @@ export function NotificationBell() {
   // 删除通知
   const deleteNotification = async (id: string) => {
     try {
-      const response = await fetch(`/api/notifications?id=${id}`, {
+      const response = await fetch("/api/notifications", {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [id] }),
       });
 
       if (response.ok) {
@@ -90,6 +94,11 @@ export function NotificationBell() {
       toast.error("删除失败");
     }
   };
+
+  // 监听刷新信号
+  useEffect(() => {
+    fetchNotifications();
+  }, [refreshKey]);
 
   // 初始化
   useEffect(() => {
@@ -102,12 +111,9 @@ export function NotificationBell() {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "notification") {
-          // 收到新通知
-          setNotifications((prev) =>
-            [data.data as Notification, ...prev].slice(0, 10),
-          );
-          setUnreadCount((prev) => prev + 1);
-
+          // 收到新通知，立即刷新通知列表
+          fetchNotifications();
+          
           // 显示桌面通知（如果用户允许）
           if (
             "Notification" in window &&
