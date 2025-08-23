@@ -113,7 +113,7 @@ export function NotificationBell() {
         if (data.type === "notification") {
           // 收到新通知，立即刷新通知列表
           fetchNotifications();
-          
+
           // 显示桌面通知（如果用户允许）
           if (
             "Notification" in window &&

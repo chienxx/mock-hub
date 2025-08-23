@@ -155,7 +155,7 @@ export function NotificationsPageClient() {
           // 判断是否还有更多数据
           setHasMore(
             (isLoadMore ? pagination.page + 1 : 1) <
-              (result.data?.totalPages || 1)
+              (result.data?.totalPages || 1),
           );
         }
       } catch (error) {
@@ -171,7 +171,7 @@ export function NotificationsPageClient() {
       selectedType,
       readFilter,
       searchQuery,
-    ]
+    ],
   );
 
   // 初始加载
@@ -214,16 +214,11 @@ export function NotificationsPageClient() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          hasMore &&
-          !loading &&
-          !loadingMore
-        ) {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
           fetchNotifications(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (loadMoreRef.current) {
@@ -250,8 +245,8 @@ export function NotificationsPageClient() {
 
       setNotifications((prev) =>
         prev.map((n) =>
-          notificationIds.includes(n.id) ? { ...n, isRead: true } : n
-        )
+          notificationIds.includes(n.id) ? { ...n, isRead: true } : n,
+        ),
       );
 
       setPagination((prev) => ({
@@ -278,12 +273,12 @@ export function NotificationsPageClient() {
       if (!response.ok) throw new Error("删除失败");
 
       setNotifications((prev) =>
-        prev.filter((n) => !notificationIds.includes(n.id))
+        prev.filter((n) => !notificationIds.includes(n.id)),
       );
 
       // 更新未读数量
-      const deletedUnreadCount = notificationIds.filter(
-        (id) => notifications.find((n) => n.id === id && !n.isRead)
+      const deletedUnreadCount = notificationIds.filter((id) =>
+        notifications.find((n) => n.id === id && !n.isRead),
       ).length;
 
       setPagination((prev) => ({
@@ -301,9 +296,7 @@ export function NotificationsPageClient() {
 
   // 标记全部已读
   const markAllAsRead = async () => {
-    const unreadIds = notifications
-      .filter((n) => !n.isRead)
-      .map((n) => n.id);
+    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n.id);
     if (unreadIds.length > 0) {
       await markAsRead(unreadIds);
     }
@@ -361,7 +354,7 @@ export function NotificationsPageClient() {
     (n) =>
       !searchQuery ||
       n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.content.toLowerCase().includes(searchQuery.toLowerCase())
+      n.content.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // 虚拟滚动配置
@@ -381,7 +374,7 @@ export function NotificationsPageClient() {
         "hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700",
         "hover:translate-y-[-1px]",
         !notification.isRead &&
-          "bg-slate-50/80 dark:bg-slate-800/30 border-slate-300/80 dark:border-slate-700/80 shadow-sm"
+          "bg-slate-50/80 dark:bg-slate-800/30 border-slate-300/80 dark:border-slate-700/80 shadow-sm",
       )}
       onClick={() => {
         setSelectedNotification(notification);
@@ -396,7 +389,7 @@ export function NotificationsPageClient() {
             <div
               className={cn(
                 "w-8 h-8 rounded-lg flex items-center justify-center text-white",
-                getNotificationStyle(notification.type)
+                getNotificationStyle(notification.type),
               )}
             >
               {getNotificationIcon(notification.type)}
@@ -415,7 +408,7 @@ export function NotificationsPageClient() {
                       "text-sm font-medium",
                       notification.isRead
                         ? "text-slate-600 dark:text-slate-400"
-                        : "text-slate-800 dark:text-slate-200"
+                        : "text-slate-800 dark:text-slate-200",
                     )}
                   >
                     {notification.title}
@@ -426,7 +419,7 @@ export function NotificationsPageClient() {
                       "text-[10px] px-1.5 py-0 h-4",
                       notification.isRead
                         ? "text-slate-400 border-slate-200 dark:text-slate-500 dark:border-slate-700"
-                        : "text-slate-500 border-slate-300 dark:text-slate-400 dark:border-slate-600"
+                        : "text-slate-500 border-slate-300 dark:text-slate-400 dark:border-slate-600",
                     )}
                   >
                     {getNotificationLabel(notification.type)}
@@ -437,7 +430,7 @@ export function NotificationsPageClient() {
                     "text-xs leading-relaxed line-clamp-2",
                     notification.isRead
                       ? "text-slate-500 dark:text-slate-500"
-                      : "text-slate-600 dark:text-slate-400"
+                      : "text-slate-600 dark:text-slate-400",
                   )}
                 >
                   {notification.content}
@@ -547,7 +540,7 @@ export function NotificationsPageClient() {
           "bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm",
           "border border-slate-200/60 dark:border-slate-800/60",
           "rounded-xl p-4",
-          "shadow-sm"
+          "shadow-sm",
         )}
       >
         <div className="flex flex-col lg:flex-row gap-4">
@@ -653,7 +646,7 @@ export function NotificationsPageClient() {
                 >
                   <div className="pb-3">
                     {renderNotificationCard(
-                      filteredNotifications[virtualItem.index]
+                      filteredNotifications[virtualItem.index],
                     )}
                   </div>
                 </div>
@@ -897,7 +890,7 @@ export function NotificationsPageClient() {
                   {JSON.stringify(
                     selectedNotification.metadata as Record<string, unknown>,
                     null,
-                    2
+                    2,
                   )}
                 </pre>
               </div>
