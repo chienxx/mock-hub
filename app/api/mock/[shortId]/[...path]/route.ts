@@ -5,6 +5,7 @@ import { executeRule } from "@/lib/mock/rule-executor";
 import { handleProxy } from "@/lib/mock/proxy-handler";
 import { parseFakerTemplate } from "@/lib/mock/faker-parser";
 import { recordApiLog as logApiCall } from "@/lib/api/log-helper";
+import { executeCallbacks } from "@/lib/mock/callback-executor";
 import { ProxyMode, HTTPMethod } from "@prisma/client";
 import type { MockAPI, MockRule } from "@prisma/client";
 import { notifyApiError } from "@/lib/api/notification-helper";
@@ -194,6 +195,8 @@ async function handleMockRequest(
 
     // 记录API日志（无论是否找到Mock API都要记录）
     const responseTime = Date.now() - startTime;
+    const responseBodyData = await getResponseBody(response);
+
     if (mockApi) {
       // 有Mock API时的完整日志
       await logApiCall({
@@ -205,13 +208,27 @@ async function handleMockRequest(
         body: requestContext.body,
         statusCode: response.status,
         responseHeaders: Object.fromEntries(response.headers.entries()),
-        responseBody: await getResponseBody(response),
+        responseBody: responseBodyData,
         responseTime,
         ruleId: matchedRuleId,
         isProxied,
         proxyUrl,
         ip: getClientIp(request),
         userAgent: request.headers.get("user-agent"),
+      });
+
+      // 执行回调（异步，不阻塞响应）
+      executeCallbacks(
+        mockApi.id,
+        requestContext,
+        {
+          statusCode: response.status,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: responseBodyData,
+        }
+      ).catch((error) => {
+        // 回调失败不影响主流程
+        console.error("Callback execution error:", error);
       });
     } else {
       // 没有Mock API时，在开发环境记录基础日志（用于404等情况的调试）

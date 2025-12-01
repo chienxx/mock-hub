@@ -20,6 +20,7 @@ import {
   Layers,
   HelpCircle,
   History,
+  Webhook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,12 @@ export function CollapsibleSidebar({
         items: [
           { label: "API 接口", href: "/mocks", icon: Network, badge: "Hot" },
           { label: "接口日志", href: "/logs", icon: FileText, badge: null },
+          {
+            label: "回调日志",
+            href: "/callback-logs",
+            icon: Webhook,
+            badge: null,
+          },
           {
             label: "数据分析",
             href: "/analytics",

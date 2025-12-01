@@ -81,28 +81,29 @@ model Collection {
 }
 
 model MockAPI {
-  id              String      @id @default(cuid())
+  id              String         @id @default(cuid())
   projectId       String
-  collectionId    String?     // 所属分组
+  collectionId    String?        // 所属分组
   path            String
-  method          HTTPMethod  @default(GET)
+  method          HTTPMethod     @default(GET)
   name            String?
   description     String?
-  enabled         Boolean     @default(true)
-  proxyMode       ProxyMode   @default(MOCK)     // 代理模式
-  useFakerJs       Boolean     @default(false)    // 是否使用Faker.js语法
-  responseDelay   Int?        @default(0)
-  responseStatus  Int         @default(200)
+  enabled         Boolean        @default(true)
+  proxyMode       ProxyMode      @default(MOCK)     // 代理模式
+  useFakerJs       Boolean        @default(false)    // 是否使用Faker.js语法
+  responseDelay   Int?           @default(0)
+  responseStatus  Int            @default(200)
   responseHeaders Json?
   responseBody    Json?
   creatorId       String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   logs            APILog[]
-  createdBy       User        @relation(fields: [creatorId], references: [id])
-  project         Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  collection      Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdBy       User           @relation(fields: [creatorId], references: [id])
+  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  collection      Collection?    @relation(fields: [collectionId], references: [id], onDelete: SetNull)
   rules           MockRule[]
+  callbacks       MockCallback[] // 回调配置
 
   @@unique([projectId, path, method])
   @@index([projectId])
@@ -135,6 +136,55 @@ model MockRule {
   @@index([enabled])
   @@index([mockApiId, enabled, priority])
   @@map("mock_rules")
+}
+
+// Mock回调配置表
+model MockCallback {
+  id          String         @id @default(cuid())
+  mockApiId   String
+  name        String?        // 回调名称
+  url         String         // 回调URL
+  method      CallbackMethod @default(POST) // 回调HTTP方法
+  headers     Json?          // 自定义请求头
+  body        Json?          // 请求体模板（支持变量替换）
+  delay       Int            @default(0)  // 延迟毫秒数
+  enabled     Boolean        @default(true)
+  order       Int            @default(0)  // 执行顺序
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  mockApi     MockAPI        @relation(fields: [mockApiId], references: [id], onDelete: Cascade)
+  logs        CallbackLog[]  // 回调执行日志
+
+  @@index([mockApiId])
+  @@index([enabled])
+  @@index([mockApiId, enabled, order])
+  @@map("mock_callbacks")
+}
+
+// 回调执行日志表
+model CallbackLog {
+  id              String       @id @default(cuid())
+  callbackId      String
+  mockApiLogId    String?      // 关联的API调用日志ID（可选）
+  url             String       // 实际调用的URL（变量替换后）
+  method          String       // HTTP方法
+  requestHeaders  Json?        // 请求头
+  requestBody     Json?        // 请求体（变量替换后）
+  statusCode      Int?         // 响应状态码
+  responseHeaders Json?        // 响应头
+  responseBody    Json?        // 响应体
+  responseTime    Int?         // 响应时间（毫秒）
+  error           String?      @db.Text // 错误信息
+  success         Boolean      @default(false) // 是否成功
+  createdAt       DateTime     @default(now())
+  callback        MockCallback @relation(fields: [callbackId], references: [id], onDelete: Cascade)
+
+  @@index([callbackId])
+  @@index([createdAt])
+  @@index([success])
+  @@index([callbackId, createdAt])
+  @@index([mockApiLogId])
+  @@map("callback_logs")
 }
 
 model APILog {
@@ -241,6 +291,13 @@ enum ProjectRole {
 }
 
 enum HTTPMethod {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+enum CallbackMethod {
   GET
   POST
   PUT

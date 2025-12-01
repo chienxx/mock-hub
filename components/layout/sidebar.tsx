@@ -15,6 +15,7 @@ import {
   X,
   Zap,
   Shield,
+  Webhook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -67,6 +68,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         items: [
           { label: "API 接口", href: "/mocks", icon: FileCode, badge: "Hot" },
           { label: "接口日志", href: "/logs", icon: AlertCircle, badge: null },
+          {
+            label: "回调日志",
+            href: "/callback-logs",
+            icon: Webhook,
+            badge: null,
+          },
           {
             label: "数据分析",
             href: "/analytics",

@@ -18,6 +18,7 @@ import {
   Shield,
   Edit,
   Clock,
+  Webhook,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ import { HTTPMethod, ProxyMode, ProjectRole } from "@prisma/client";
 import type { MockAPI, ApiResponse, Collection } from "@/types/mock";
 import { JSONEditor } from "@/components/editors/json-editor";
 import { RuleList } from "@/components/rules/rule-list";
+import { CallbackList } from "@/components/callbacks/callback-list";
 import { cn } from "@/lib/utils";
 
 interface PageProps {
@@ -430,6 +432,13 @@ export default function MockAPIEditPage({ params }: PageProps) {
             <Shield className="w-4 h-4 mr-2" />
             规则配置
           </TabsTrigger>
+          <TabsTrigger
+            value="callbacks"
+            className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900"
+          >
+            <Webhook className="w-4 h-4 mr-2" />
+            回调配置
+          </TabsTrigger>
         </TabsList>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -718,6 +727,34 @@ export default function MockAPIEditPage({ params }: PageProps) {
                 </p>
               </div>
               <RuleList
+                mockApiId={mockId}
+                projectId={projectId}
+                canManage={canManage}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="callbacks" className="space-y-6">
+          {/* 回调配置列表 */}
+          <div
+            className={cn(
+              "bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm",
+              "border border-slate-200/60 dark:border-slate-800/60",
+              "rounded-xl p-6",
+              "shadow-sm",
+            )}
+          >
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                  回调配置
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  在 Mock 响应返回后自动调用指定接口，支持延迟执行和变量替换。查看回调日志请前往左侧菜单"回调日志"。
+                </p>
+              </div>
+              <CallbackList
                 mockApiId={mockId}
                 projectId={projectId}
                 canManage={canManage}
